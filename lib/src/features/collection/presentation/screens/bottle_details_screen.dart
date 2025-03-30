@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../models/whiskey.dart';
 import '../../bloc/collection_bloc.dart';
+import '../widgets/bottle_info_widget.dart';
+import '../widgets/whiskey_detail_tabs_widget.dart';
 
 class BottleDetailsScreen extends StatefulWidget {
   final String bottleId;
@@ -20,7 +22,6 @@ class BottleDetailsScreen extends StatefulWidget {
 }
 
 class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerProviderStateMixin {
-  late TabController _tabController;
   bool _isExpanded = false;
 
   late AnimationController _expandController;
@@ -38,8 +39,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _tabController.index = 0;
 
     _expandController = AnimationController(
       vsync: this,
@@ -122,7 +121,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
 
   @override
   void dispose() {
-    _tabController.dispose();
     _expandController.dispose();
     _contentAnimationController.dispose();
     _shimmerController.dispose();
@@ -287,81 +285,22 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  // Using the custom bottle info widget
+                                  BottleInfoWidget(
+                                    whiskey: whiskey,
+                                    bottleYear: bottleYear,
+                                    edition: edition,
+                                    fadeAnimation: _contentFadeAnimation,
+                                    slideAnimation: _contentSlideAnimation,
+                                  ),
+                                  const SizedBox(height: 24),
+                                  // Using the custom tabs widget
                                   FadeTransition(
                                     opacity: _contentFadeAnimation,
                                     child: SlideTransition(
                                       position: _contentSlideAnimation,
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            whiskey.limitedEdition ? 'Limited Edition' : 'Standard Release',
-                                            style: const TextStyle(
-                                              fontFamily: 'Lato',
-                                              color: Color(0xFFB8BDBF),
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Hero(
-                                                tag: 'distillery_${whiskey.id}',
-                                                child: Material(
-                                                  color: Colors.transparent,
-                                                  child: Text(
-                                                    whiskey.distillery,
-                                                    style: const TextStyle(
-                                                      fontFamily: 'EBGaramond',
-                                                      color: Color(0xFFE7E9EA),
-                                                      fontSize: 42,
-                                                      fontWeight: FontWeight.w500,
-                                                      height: 1.1,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              Hero(
-                                                tag: 'year_${whiskey.id}',
-                                                child: Material(
-                                                  color: Colors.transparent,
-                                                  child: Text(
-                                                    bottleYear,
-                                                    style: const TextStyle(
-                                                      fontFamily: 'EBGaramond',
-                                                      color: Color(0xFFE7E9EA),
-                                                      fontSize: 42,
-                                                      fontWeight: FontWeight.w500,
-                                                      height: 1.1,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(height: 8),
-                                              Hero(
-                                                tag: 'edition_${whiskey.id}',
-                                                child: Material(
-                                                  color: Colors.transparent,
-                                                  child: Text(
-                                                    edition,
-                                                    style: const TextStyle(
-                                                      fontFamily: 'Lato',
-                                                      color: Color(0xFFD7D5D1),
-                                                      fontSize: 28,
-                                                      fontWeight: FontWeight.w400,
-                                                      height: 1.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 24),
-                                          _buildTabBar(whiskey),
-                                          const SizedBox(height: 24),
-                                          _buildTabContent(whiskey),
-                                        ],
+                                      child: WhiskeyDetailTabsWidget(
+                                        whiskey: whiskey,
                                       ),
                                     ),
                                   ),
@@ -369,6 +308,7 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                               ),
                             ),
                             const SizedBox(height: 24),
+                            // Add to collection button
                             FadeTransition(
                               opacity: _contentFadeAnimation,
                               child: SlideTransition(
@@ -483,8 +423,8 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
       color: Colors.transparent,
       child: InkWell(
         onTap: _toggleExpansion,
-        splashColor: const Color(0xFFDE9A1F).withValues(alpha: 0.1),
-        highlightColor: const Color(0xFFDE9A1F).withValues(alpha: 0.05),
+        splashColor: const Color(0xFFDE9A1F).withOpacity(0.1),
+        highlightColor: const Color(0xFFDE9A1F).withOpacity(0.05),
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
@@ -563,7 +503,7 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                           color: const Color(0xFF0A1F2E),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
+                              color: Colors.black.withOpacity(0.2),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),
@@ -648,470 +588,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTabBar(Whiskey whiskey) {
-    return Container(
-      padding: EdgeInsets.zero,
-      decoration: BoxDecoration(
-        color: const Color(0xFF0E1C21),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: TabBar(
-        controller: _tabController,
-        indicator: BoxDecoration(
-          color: const Color(0xFFD49A00),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        dividerColor: Colors.transparent,
-        indicatorSize: TabBarIndicatorSize.tab,
-        padding: const EdgeInsets.all(3),
-        labelColor: const Color(0xFF0B1519),
-        unselectedLabelColor: const Color(0xFF899194),
-        labelStyle: const TextStyle(
-          fontSize: 12,
-          fontFamily: 'Lato',
-          fontWeight: FontWeight.w600,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
-          fontFamily: 'Lato',
-        ),
-        tabs: const [
-          SizedBox(
-            height: 36,
-            child: Center(child: Text('Details')),
-          ),
-          SizedBox(
-            height: 36,
-            child: Center(child: Text('Tasting notes')),
-          ),
-          SizedBox(
-            height: 36,
-            child: Center(child: Text('History')),
-          ),
-        ],
-        onTap: (index) {
-          setState(() {});
-        },
-      ),
-    );
-  }
-
-  Widget _buildTabContent(Whiskey whiskey) {
-    switch (_tabController.index) {
-      case 0:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildDetailRow('Distillery', whiskey.distillery),
-            _buildDetailRow('Region', whiskey.region),
-            _buildDetailRow('Country', whiskey.region.split(',').last.trim()),
-            _buildDetailRow('Type', 'Single Malt'),
-            _buildDetailRow('Age statement', '${whiskey.age} years'),
-            _buildDetailRow('Filled', ''),
-            _buildDetailRow('Bottled', whiskey.bottled),
-            _buildDetailRow('Cask number', '#${whiskey.id.split('_').last}'),
-            _buildDetailRow('ABV', '${whiskey.abv}%'),
-            _buildDetailRow('Size', '750ml'),
-            _buildDetailRow('Finish', whiskey.caskType),
-          ],
-        );
-      case 1:
-        return _buildTastingNotesContent(whiskey);
-      case 2:
-        return _buildHistoryTimeline();
-      default:
-        return const SizedBox.shrink();
-    }
-  }
-
-  Widget _buildTastingNotesContent(Whiskey whiskey) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: double.infinity,
-          height: 180,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: const Color(0xFF0A1519),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: double.infinity,
-                height: double.infinity,
-                color: const Color(0xFF0A1519),
-              ),
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.7),
-                    width: 2,
-                  ),
-                ),
-                child: Icon(
-                  Icons.play_arrow,
-                  color: Colors.white.withOpacity(0.9),
-                  size: 30,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'Tasting notes',
-          style: TextStyle(
-            fontFamily: 'EBGaramond',
-            color: Color(0xFFE7E9EA),
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.2,
-          ),
-        ),
-        const SizedBox(height: 4),
-        const Text(
-          'by Charles MacLean MBE',
-          style: TextStyle(
-            fontFamily: 'Lato',
-            color: Color(0xFFD49A00),
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            letterSpacing: 0.1,
-          ),
-        ),
-        const SizedBox(height: 24),
-        _buildTastingNotesSection(
-          title: 'Nose',
-          descriptions: [whiskey.tastingNotes.nose],
-        ),
-        const SizedBox(height: 24),
-        _buildTastingNotesSection(
-          title: 'Palate',
-          descriptions: [whiskey.tastingNotes.palate],
-        ),
-        const SizedBox(height: 24),
-        _buildTastingNotesSection(
-          title: 'Finish',
-          descriptions: [whiskey.tastingNotes.finish],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTastingNotesSection({
-    required String title,
-    required List<String> descriptions,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontFamily: 'EBGaramond',
-            color: Color(0xFFE7E9EA),
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-            height: 1.2,
-          ),
-        ),
-        const SizedBox(height: 8),
-        ...descriptions
-            .map((description) => Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Text(
-                    description,
-                    style: const TextStyle(
-                      fontFamily: 'Lato',
-                      color: Color(0xFFB8BDBF),
-                      fontSize: 14,
-                      height: 1.4,
-                    ),
-                  ),
-                ))
-            .toList(),
-      ],
-    );
-  }
-
-  Widget _buildHistoryTimeline() {
-    return Stack(
-      children: [
-        Positioned(
-          left: 11.5,
-          top: 12,
-          bottom: 12,
-          width: 2,
-          child: Container(
-            color: const Color(0xFFD49A00),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Column(
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 24,
-                    height: 24,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Label',
-                          style: const TextStyle(
-                            fontFamily: 'Lato',
-                            color: Color(0xFFB8BDBF),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Title',
-                          style: const TextStyle(
-                            fontFamily: 'EBGaramond',
-                            color: Color(0xFFE7E9EA),
-                            fontSize: 24,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Description',
-                          style: const TextStyle(
-                            fontFamily: 'Lato',
-                            color: Color(0xFFB8BDBF),
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Description',
-                          style: const TextStyle(
-                            fontFamily: 'Lato',
-                            color: Color(0xFFB8BDBF),
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildAttachmentsSection(),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 30),
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 9.0),
-                    child: Transform.rotate(
-                      angle: 0.785398,
-                      child: Container(
-                        width: 6,
-                        height: 6,
-                        color: const Color(0xFFD49A00),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 30),
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 7.0),
-                    child: Transform.rotate(
-                      angle: 0.785398,
-                      child: Container(
-                        width: 10,
-                        height: 10,
-                        color: const Color(0xFFD49A00),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 30),
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 9.0),
-                    child: Transform.rotate(
-                      angle: 0.785398,
-                      child: Container(
-                        width: 6,
-                        height: 6,
-                        color: const Color(0xFFD49A00),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 30),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 24,
-                    height: 24,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Label',
-                          style: const TextStyle(
-                            fontFamily: 'Lato',
-                            color: Color(0xFFB8BDBF),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Title',
-                          style: const TextStyle(
-                            fontFamily: 'EBGaramond',
-                            color: Color(0xFFE7E9EA),
-                            fontSize: 24,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Description',
-                          style: const TextStyle(
-                            fontFamily: 'Lato',
-                            color: Color(0xFFB8BDBF),
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Description',
-                          style: const TextStyle(
-                            fontFamily: 'Lato',
-                            color: Color(0xFFB8BDBF),
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildAttachmentsSection(),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAttachmentsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: const [
-            Icon(
-              Icons.link,
-              color: Color(0xFFE7E9EA),
-              size: 20,
-            ),
-            SizedBox(width: 8),
-            Text(
-              'Attachments',
-              style: TextStyle(
-                fontFamily: 'Lato',
-                color: Color(0xFFE7E9EA),
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            _buildSquareAttachment(),
-            const SizedBox(width: 8),
-            _buildSquareAttachment(),
-            const SizedBox(width: 8),
-            _buildSquareAttachment(),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSquareAttachment() {
-    return Container(
-      width: 95,
-      height: 95,
-      decoration: BoxDecoration(
-        color: const Color(0xFFCCCCCC),
-        borderRadius: BorderRadius.circular(4),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontFamily: 'Lato',
-              color: Colors.white,
-              fontSize: 16,
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontFamily: 'Lato',
-              color: Color(0xFFB8BDBF),
-              fontSize: 16,
-            ),
-          ),
-        ],
       ),
     );
   }
