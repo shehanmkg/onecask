@@ -28,6 +28,10 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
   late Animation<double> _rotationAnimation;
   late Animation<double> _fadeAnimation;
 
+  late AnimationController _contentAnimationController;
+  late Animation<double> _contentFadeAnimation;
+  late Animation<Offset> _contentSlideAnimation;
+
   late AnimationController _shimmerController;
   late Animation<double> _shimmerAnimation;
 
@@ -63,6 +67,28 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
       curve: const Interval(0.4, 1.0, curve: Curves.easeInOut),
     ));
 
+    // Initialize content animation controller
+    _contentAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _contentFadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _contentAnimationController,
+      curve: const Interval(0.2, 1.0, curve: Curves.easeOut),
+    ));
+
+    _contentSlideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.05),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _contentAnimationController,
+      curve: const Interval(0.2, 1.0, curve: Curves.easeOutCubic),
+    ));
+
     _shimmerController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -87,12 +113,18 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
         _shimmerController.reset();
       }
     });
+
+    // Start content animation after frame is rendered
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _contentAnimationController.forward();
+    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     _expandController.dispose();
+    _contentAnimationController.dispose();
     _shimmerController.dispose();
     super.dispose();
   }
@@ -195,6 +227,10 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
             );
           }
 
+          // Create page transition animation variables
+          final String bottleYear = "${whiskey.bottled} #${whiskey.id.split('_').last}";
+          final String edition = _generateEditionNumber(whiskey.id);
+
           return Scaffold(
             backgroundColor: const Color(0xFF0B1519),
             body: Container(
@@ -207,8 +243,17 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
               child: SafeArea(
                 child: Column(
                   children: [
-                    _buildTopBar(),
-                    _buildAuthenticitySection(),
+                    FadeTransition(
+                      opacity: _contentFadeAnimation,
+                      child: _buildTopBar(),
+                    ),
+                    FadeTransition(
+                      opacity: _contentFadeAnimation,
+                      child: SlideTransition(
+                        position: _contentSlideAnimation,
+                        child: _buildAuthenticitySection(),
+                      ),
+                    ),
                     const SizedBox(height: 25),
                     Expanded(
                       child: SingleChildScrollView(
@@ -217,16 +262,19 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                             SizedBox(
                               height: size.height * 0.4,
                               child: Center(
-                                child: Image.asset(
-                                  'assets/images/one_cask_bottle.png',
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const Icon(
-                                      Icons.photo_outlined,
-                                      color: Color(0xFFDE9A1F),
-                                      size: 120,
-                                    );
-                                  },
+                                child: Hero(
+                                  tag: 'bottle_${whiskey.id}',
+                                  child: Image.asset(
+                                    'assets/images/one_cask_bottle.png',
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(
+                                        Icons.photo_outlined,
+                                        color: Color(0xFFDE9A1F),
+                                        size: 120,
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
                             ),
@@ -239,93 +287,128 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    whiskey.limitedEdition ? 'Limited Edition' : 'Standard Release',
-                                    style: const TextStyle(
-                                      fontFamily: 'Lato',
-                                      color: Color(0xFFB8BDBF),
-                                      fontSize: 12,
+                                  FadeTransition(
+                                    opacity: _contentFadeAnimation,
+                                    child: SlideTransition(
+                                      position: _contentSlideAnimation,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            whiskey.limitedEdition ? 'Limited Edition' : 'Standard Release',
+                                            style: const TextStyle(
+                                              fontFamily: 'Lato',
+                                              color: Color(0xFFB8BDBF),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Hero(
+                                                tag: 'distillery_${whiskey.id}',
+                                                child: Material(
+                                                  color: Colors.transparent,
+                                                  child: Text(
+                                                    whiskey.distillery,
+                                                    style: const TextStyle(
+                                                      fontFamily: 'EBGaramond',
+                                                      color: Color(0xFFE7E9EA),
+                                                      fontSize: 42,
+                                                      fontWeight: FontWeight.w500,
+                                                      height: 1.1,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              Hero(
+                                                tag: 'year_${whiskey.id}',
+                                                child: Material(
+                                                  color: Colors.transparent,
+                                                  child: Text(
+                                                    bottleYear,
+                                                    style: const TextStyle(
+                                                      fontFamily: 'EBGaramond',
+                                                      color: Color(0xFFE7E9EA),
+                                                      fontSize: 42,
+                                                      fontWeight: FontWeight.w500,
+                                                      height: 1.1,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Hero(
+                                                tag: 'edition_${whiskey.id}',
+                                                child: Material(
+                                                  color: Colors.transparent,
+                                                  child: Text(
+                                                    edition,
+                                                    style: const TextStyle(
+                                                      fontFamily: 'Lato',
+                                                      color: Color(0xFFD7D5D1),
+                                                      fontSize: 28,
+                                                      fontWeight: FontWeight.w400,
+                                                      height: 1.0,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 24),
+                                          _buildTabBar(whiskey),
+                                          const SizedBox(height: 24),
+                                          _buildTabContent(whiskey),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        whiskey.distillery,
-                                        style: const TextStyle(
-                                          fontFamily: 'EBGaramond',
-                                          color: Color(0xFFE7E9EA),
-                                          fontSize: 42,
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.1,
-                                        ),
-                                      ),
-                                      Text(
-                                        '${whiskey.bottled} #${whiskey.id.split('_').last}',
-                                        style: const TextStyle(
-                                          fontFamily: 'EBGaramond',
-                                          color: Color(0xFFE7E9EA),
-                                          fontSize: 42,
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.1,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        _generateEditionNumber(whiskey.id),
-                                        style: const TextStyle(
-                                          fontFamily: 'Lato',
-                                          color: Color(0xFFD7D5D1),
-                                          fontSize: 28,
-                                          fontWeight: FontWeight.w400,
-                                          height: 1.0,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 24),
-                                  _buildTabBar(whiskey),
-                                  const SizedBox(height: 24),
-                                  _buildTabContent(whiskey),
                                 ],
                               ),
                             ),
                             const SizedBox(height: 24),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: Colors.transparent,
-                              ),
-                              child: ElevatedButton.icon(
-                                icon: const Icon(
-                                  Icons.add,
-                                  size: 24,
-                                  color: Color(0xFF0B1519),
-                                ),
-                                label: Text(
-                                  whiskey.inCollection ? 'Already in collection' : 'Add to my collection',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF0B1519),
-                                    fontFamily: 'EBGaramond',
-                                    letterSpacing: 0.2,
+                            FadeTransition(
+                              opacity: _contentFadeAnimation,
+                              child: SlideTransition(
+                                position: _contentSlideAnimation,
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(vertical: 20),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: Colors.transparent,
+                                  ),
+                                  child: ElevatedButton.icon(
+                                    icon: const Icon(
+                                      Icons.add,
+                                      size: 24,
+                                      color: Color(0xFF0B1519),
+                                    ),
+                                    label: Text(
+                                      whiskey.inCollection ? 'Already in collection' : 'Add to my collection',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF0B1519),
+                                        fontFamily: 'EBGaramond',
+                                        letterSpacing: 0.2,
+                                      ),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFD49A00),
+                                      foregroundColor: const Color(0xFF0E1C21),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      elevation: 3,
+                                      shadowColor: const Color(0xFF0B1519).withOpacity(0.3),
+                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                    ),
+                                    onPressed: whiskey.inCollection ? null : () {},
                                   ),
                                 ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFD49A00),
-                                  foregroundColor: const Color(0xFF0E1C21),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  elevation: 3,
-                                  shadowColor: const Color(0xFF0B1519).withOpacity(0.3),
-                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                ),
-                                onPressed: whiskey.inCollection ? null : () {},
                               ),
                             ),
                             const SizedBox(height: 24),

@@ -41,7 +41,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
       body: Stack(
         children: [
           _buildMainContent(),
-
           Positioned(
             left: 0,
             right: 0,
@@ -102,7 +101,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-
                 Stack(
                   clipBehavior: Clip.none,
                   children: [
@@ -129,7 +127,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
               ],
             ),
           ),
-
           Expanded(
             child: BlocBuilder<CollectionBloc, CollectionState>(
               builder: (context, state) {
@@ -239,7 +236,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
               color: const Color(0xFF122329),
             ),
           ),
-
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -247,13 +243,15 @@ class _CollectionScreenState extends State<CollectionScreen> {
                 flex: 5,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  child: Image.asset(
-                    'assets/images/one_cask_bottle.png',
-                    fit: BoxFit.contain,
+                  child: Hero(
+                    tag: 'bottle_${whiskey.id}',
+                    child: Image.asset(
+                      'assets/images/one_cask_bottle.png',
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
               ),
-
               Expanded(
                 flex: 2,
                 child: Container(
@@ -262,39 +260,57 @@ class _CollectionScreenState extends State<CollectionScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(
-                        whiskey.distillery,
-                        style: const TextStyle(
-                          fontFamily: 'EBGaramond',
-                          color: Color(0xFFE7E9EA),
-                          fontSize: 22,
-                          fontWeight: FontWeight.w500,
-                          height: 1.1,
+                      Hero(
+                        tag: 'distillery_${whiskey.id}',
+                        child: Material(
+                          color: Colors.transparent,
+                          child: Text(
+                            whiskey.distillery,
+                            style: const TextStyle(
+                              fontFamily: 'EBGaramond',
+                              color: Color(0xFFE7E9EA),
+                              fontSize: 22,
+                              fontWeight: FontWeight.w500,
+                              height: 1.1,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                      Text(
-                        bottleYear,
-                        style: const TextStyle(
-                          fontFamily: 'EBGaramond',
-                          color: Color(0xFFE7E9EA),
-                          fontSize: 22,
-                          fontWeight: FontWeight.w500,
-                          height: 1.1,
+                      Hero(
+                        tag: 'year_${whiskey.id}',
+                        child: Material(
+                          color: Colors.transparent,
+                          child: Text(
+                            bottleYear,
+                            style: const TextStyle(
+                              fontFamily: 'EBGaramond',
+                              color: Color(0xFFE7E9EA),
+                              fontSize: 22,
+                              fontWeight: FontWeight.w500,
+                              height: 1.1,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        edition,
-                        style: const TextStyle(
-                          fontFamily: 'Lato',
-                          color: Color(0xFFD7D5D1),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          height: 1.0,
+                      Hero(
+                        tag: 'edition_${whiskey.id}',
+                        child: Material(
+                          color: Colors.transparent,
+                          child: Text(
+                            edition,
+                            style: const TextStyle(
+                              fontFamily: 'Lato',
+                              color: Color(0xFFD7D5D1),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              height: 1.0,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -315,8 +331,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
         final number = int.parse(parts.last);
         return '(${number % 200 + 1}/${number % 100 + 100})';
       }
-    } catch (e) {
-    }
+    } catch (e) {}
     return index % 2 == 0
         ? "(${(index * 14 + 16)}/${(index * 24 + 94)})"
         : "(${(index * 24 + 43)}/${(index * 46 + 112)})";
