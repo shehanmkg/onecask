@@ -48,7 +48,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
                 child: Text(
@@ -61,66 +60,55 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
               ),
-
-              // Settings list
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   children: [
-                    // Account section
                     _buildSectionHeader('Account'),
                     _buildSettingsItem(
                       icon: Icons.person_outline,
                       title: 'Profile',
                       onTap: () {
-                        // Navigate to profile settings
                       },
                     ),
                     _buildSettingsItem(
                       svgIcon: 'assets/icons/ic_bell.svg',
                       title: 'Notifications',
                       onTap: () {
-                        // Navigate to notification settings
                       },
                     ),
                     _buildSettingsItem(
                       icon: Icons.privacy_tip_outlined,
                       title: 'Privacy',
                       onTap: () {
-                        // Navigate to privacy settings
                       },
                     ),
 
                     const SizedBox(height: 24),
 
-                    // General section
                     _buildSectionHeader('General'),
                     _buildSettingsItem(
                       icon: Icons.language_outlined,
                       title: 'Language',
                       onTap: () {
-                        // Navigate to language settings
                       },
                     ),
                     _buildSettingsItem(
                       icon: Icons.help_outline,
                       title: 'Help & Support',
                       onTap: () {
-                        // Navigate to help & support
                       },
                     ),
                     _buildSettingsItem(
                       icon: Icons.info_outline,
                       title: 'About',
                       onTap: () {
-                        // Show about dialog
                         _showAboutDialog(context);
                       },
                     ),
 
                     const SizedBox(height: 24),
 
-                    // Auth section
                     _buildSectionHeader('Authentication'),
                     _buildSettingsItem(
                       icon: Icons.logout,
@@ -133,7 +121,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                     const SizedBox(height: 40),
 
-                    // About section at the bottom
                     Center(
                       child: Column(
                         children: [

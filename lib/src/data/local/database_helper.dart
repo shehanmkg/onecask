@@ -20,7 +20,7 @@ class DatabaseHelper {
   static const String _userTable = 'user';
   static const String _distilleriesTable = 'distilleries';
   static const String _whiskeysTable = 'whiskeys';
-  static const int _dbVersion = 2; // Increment version to trigger database upgrade
+  static const int _dbVersion = 2;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -31,23 +31,20 @@ class DatabaseHelper {
   Future<Database> _initDatabase() async {
     final documentsDirectory = await getApplicationDocumentsDirectory();
     final path = join(documentsDirectory.path, _dbName);
-    print("Database path: $path"); // Log the database path for debugging
+    print("Database path: $path");
 
     return await openDatabase(
       path,
       version: _dbVersion,
       onCreate: _onCreate,
-      onUpgrade: _onUpgrade, // Add if schema changes later
+      onUpgrade: _onUpgrade,
     );
   }
 
-  // Handle database upgrades
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      // Drop existing whiskeys table if exists
       await db.execute('DROP TABLE IF EXISTS $_whiskeysTable');
 
-      // Recreate with correct schema
       await db.execute('''
         CREATE TABLE $_whiskeysTable (
           id TEXT PRIMARY KEY,
@@ -61,9 +58,9 @@ class DatabaseHelper {
           bottled TEXT,
           price REAL,
           rating REAL,
-          tastingNotes TEXT, -- JSON string
-          limitedEdition INTEGER, -- Boolean as 0/1
-          inCollection INTEGER, -- Boolean as 0/1
+          tastingNotes TEXT,
+          limitedEdition INTEGER,
+          inCollection INTEGER,
           purchaseDate TEXT,
           imageUrl TEXT
         )
@@ -73,9 +70,7 @@ class DatabaseHelper {
     }
   }
 
-  // Create the tables
   Future<void> _onCreate(Database db, int version) async {
-    // Collection Items table
     await db.execute('''
       CREATE TABLE $_collectionTable (
         id TEXT PRIMARY KEY,
@@ -85,7 +80,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // User table (as a single-row table)
     await db.execute('''
       CREATE TABLE $_userTable (
         id TEXT PRIMARY KEY,
@@ -94,13 +88,12 @@ class DatabaseHelper {
         email TEXT NOT NULL,
         joinDate TEXT,
         profileImage TEXT,
-        preferences TEXT, -- JSON string
-        stats TEXT, -- JSON string
-        settings TEXT -- JSON string
+        preferences TEXT,
+        stats TEXT,
+        settings TEXT
       )
     ''');
 
-    // Distilleries table
     await db.execute('''
       CREATE TABLE $_distilleriesTable (
         id TEXT PRIMARY KEY,
@@ -113,7 +106,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Whiskeys table - ensure column names exactly match model properties
     await db.execute('''
       CREATE TABLE $_whiskeysTable (
         id TEXT PRIMARY KEY,
@@ -127,9 +119,9 @@ class DatabaseHelper {
         bottled TEXT,
         price REAL,
         rating REAL,
-        tastingNotes TEXT, -- JSON string
-        limitedEdition INTEGER, -- Boolean as 0/1
-        inCollection INTEGER, -- Boolean as 0/1
+        tastingNotes TEXT,
+        limitedEdition INTEGER,
+        inCollection INTEGER,
         purchaseDate TEXT,
         imageUrl TEXT
       )
@@ -138,7 +130,6 @@ class DatabaseHelper {
     print("Database tables created.");
   }
 
-  // Collection items methods
   Future<void> upsertCollectionItems(List<CollectionItem> items) async {
     final db = await database;
     final batch = db.batch();
@@ -147,7 +138,7 @@ class DatabaseHelper {
       batch.insert(
         _collectionTable,
         item.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace, // Replace if ID exists
+        conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
     await batch.commit(noResult: true);
@@ -173,11 +164,9 @@ class DatabaseHelper {
     print("Cleared all items from database table '$_collectionTable'.");
   }
 
-  // User methods
   Future<void> upsertUser(User user) async {
     final db = await database;
 
-    // Convert complex objects to JSON strings
     final Map<String, dynamic> userMap = {
       'id': user.id,
       'username': user.username,
@@ -193,7 +182,7 @@ class DatabaseHelper {
     await db.insert(
       _userTable,
       userMap,
-      conflictAlgorithm: ConflictAlgorithm.replace, // Replace if ID exists
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
 
     print("User upserted into database.");
@@ -209,7 +198,6 @@ class DatabaseHelper {
 
     final userMap = maps.first;
 
-    // Parse stored JSON strings back to objects
     return User(
       id: userMap['id'] as String,
       username: userMap['username'] as String,
@@ -229,7 +217,6 @@ class DatabaseHelper {
     print("Cleared user from database table '$_userTable'.");
   }
 
-  // Distillery methods
   Future<void> upsertDistilleries(List<Distillery> distilleries) async {
     final db = await database;
     final batch = db.batch();
@@ -238,7 +225,7 @@ class DatabaseHelper {
       batch.insert(
         _distilleriesTable,
         distillery.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace, // Replace if ID exists
+        conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
     await batch.commit(noResult: true);
@@ -264,13 +251,11 @@ class DatabaseHelper {
     print("Cleared all distilleries from database table '$_distilleriesTable'.");
   }
 
-  // Whiskey methods
   Future<void> upsertWhiskeys(List<Whiskey> whiskeys) async {
     final db = await database;
     final batch = db.batch();
 
     for (var whiskey in whiskeys) {
-      // Convert tasting notes to JSON string and boolean values to integers
       final Map<String, dynamic> whiskyMap = {
         'id': whiskey.id,
         'name': whiskey.name,
@@ -284,8 +269,8 @@ class DatabaseHelper {
         'price': whiskey.price,
         'rating': whiskey.rating,
         'tastingNotes': jsonEncode(whiskey.tastingNotes.toJson()),
-        'limitedEdition': whiskey.limitedEdition ? 1 : 0, // Convert bool to int
-        'inCollection': whiskey.inCollection ? 1 : 0, // Convert bool to int
+        'limitedEdition': whiskey.limitedEdition ? 1 : 0,
+        'inCollection': whiskey.inCollection ? 1 : 0,
         'purchaseDate': whiskey.purchaseDate,
         'imageUrl': whiskey.imageUrl,
       };
@@ -293,7 +278,7 @@ class DatabaseHelper {
       batch.insert(
         _whiskeysTable,
         whiskyMap,
-        conflictAlgorithm: ConflictAlgorithm.replace, // Replace if ID exists
+        conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
     await batch.commit(noResult: true);
@@ -311,7 +296,6 @@ class DatabaseHelper {
     return List.generate(maps.length, (i) {
       final map = maps[i];
 
-      // Parse stored JSON string back to object
       final tastingNotesJson = jsonDecode(map['tastingNotes'] as String);
 
       return Whiskey(
@@ -327,8 +311,8 @@ class DatabaseHelper {
         price: map['price'] as double,
         rating: map['rating'] as double,
         tastingNotes: TastingNotes.fromJson(tastingNotesJson),
-        limitedEdition: (map['limitedEdition'] as int) == 1, // Convert int to bool
-        inCollection: (map['inCollection'] as int) == 1, // Convert int to bool
+        limitedEdition: (map['limitedEdition'] as int) == 1,
+        inCollection: (map['inCollection'] as int) == 1,
         purchaseDate: map['purchaseDate'] as String,
         imageUrl: map['imageUrl'] as String,
       );

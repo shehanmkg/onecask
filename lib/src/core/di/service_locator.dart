@@ -10,17 +10,11 @@ import '../../features/collection/bloc/collection_bloc.dart';
 
 final GetIt getIt = GetIt.instance;
 
-// Setup service locator for dependency injection
 Future<void> setupServiceLocator() async {
-  // Register singletons
-
-  // Core services
   getIt.registerLazySingleton<Connectivity>(() => Connectivity());
 
-  // Database
   getIt.registerLazySingleton<DatabaseHelper>(() => DatabaseHelper());
 
-  // Data providers
   getIt.registerLazySingleton<CollectionDataProvider>(
     () => CollectionDataProvider(dbHelper: getIt<DatabaseHelper>()),
   );
@@ -33,7 +27,6 @@ Future<void> setupServiceLocator() async {
     () => DistilleryDataProvider(dbHelper: getIt<DatabaseHelper>()),
   );
 
-  // Repositories
   getIt.registerLazySingleton<CollectionRepository>(
     () => CollectionRepository(
       dataProvider: getIt<CollectionDataProvider>(),
@@ -41,7 +34,6 @@ Future<void> setupServiceLocator() async {
     ),
   );
 
-  // Blocs
   getIt.registerFactory<CollectionBloc>(
     () => CollectionBloc(
       collectionRepository: getIt<CollectionRepository>(),

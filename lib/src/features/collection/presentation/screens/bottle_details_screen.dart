@@ -23,13 +23,11 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
   late TabController _tabController;
   bool _isExpanded = false;
 
-  // Animation controllers
   late AnimationController _expandController;
   late Animation<double> _expandAnimation;
   late Animation<double> _rotationAnimation;
   late Animation<double> _fadeAnimation;
 
-  // Separate animation controller for shimmer to avoid lifecycle issues
   late AnimationController _shimmerController;
   late Animation<double> _shimmerAnimation;
 
@@ -39,13 +37,11 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
     _tabController = TabController(length: 3, vsync: this);
     _tabController.index = 0;
 
-    // Initialize expand animation controller
     _expandController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 350),
     );
 
-    // Create animations
     _expandAnimation = CurvedAnimation(
       parent: _expandController,
       curve: Curves.easeInOut,
@@ -67,7 +63,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
       curve: const Interval(0.4, 1.0, curve: Curves.easeInOut),
     ));
 
-    // Create separate shimmer controller with repeating animation
     _shimmerController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -78,12 +73,10 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
       end: 1.0,
     ).animate(_shimmerController);
 
-    // Start or set initial animations
     if (_isExpanded) {
       _expandController.value = 1.0;
     }
 
-    // Listener to control shimmer animation based on expanded state
     _expandController.addStatusListener((status) {
       if (status == AnimationStatus.forward || status == AnimationStatus.completed) {
         if (!_shimmerController.isAnimating) {
@@ -104,7 +97,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
     super.dispose();
   }
 
-  // Toggle the expansion state with animation
   void _toggleExpansion() {
     setState(() {
       _isExpanded = !_isExpanded;
@@ -165,7 +157,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
         }
 
         if (state is CollectionLoaded) {
-          // Find the whiskey in the loaded list
           Whiskey? whiskey;
           for (final item in state.whiskeys) {
             if (item.id == widget.bottleId) {
@@ -204,7 +195,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
             );
           }
 
-          // Continue with the original UI but use the whiskey data
           return Scaffold(
             backgroundColor: const Color(0xFF0B1519),
             body: Container(
@@ -217,20 +207,13 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
               child: SafeArea(
                 child: Column(
                   children: [
-                    // Top bar with collection name and close button
                     _buildTopBar(),
-
-                    // Bottle type / authenticity section
                     _buildAuthenticitySection(),
-
                     const SizedBox(height: 25),
-
-                    // Rest of content in scrollable area
                     Expanded(
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
-                            // Bottle image
                             SizedBox(
                               height: size.height * 0.4,
                               child: Center(
@@ -248,16 +231,14 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                               ),
                             ),
                             const SizedBox(height: 25),
-                            // Bottle information container
                             Container(
                               width: double.infinity,
                               margin: const EdgeInsets.symmetric(horizontal: 16),
                               padding: const EdgeInsets.all(24),
-                              color: const Color(0xFF122329), // Slightly lighter blue with opacity
+                              color: const Color(0xFF122329),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Bottle number
                                   Text(
                                     whiskey.limitedEdition ? 'Limited Edition' : 'Standard Release',
                                     style: const TextStyle(
@@ -267,8 +248,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                                     ),
                                   ),
                                   const SizedBox(height: 8),
-
-                                  // Bottle title with colored year
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
@@ -294,7 +273,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
-                                        // Generate edition numbers based on ID with error handling
                                         _generateEditionNumber(whiskey.id),
                                         style: const TextStyle(
                                           fontFamily: 'Lato',
@@ -307,20 +285,13 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                                     ],
                                   ),
                                   const SizedBox(height: 24),
-
-                                  // Tabs
                                   _buildTabBar(whiskey),
-
                                   const SizedBox(height: 24),
-
-                                  // Tab content
                                   _buildTabContent(whiskey),
                                 ],
                               ),
                             ),
                             const SizedBox(height: 24),
-
-                            // Add to collection button - moved outside the tab content container
                             Container(
                               width: double.infinity,
                               padding: const EdgeInsets.symmetric(vertical: 20),
@@ -369,7 +340,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
           );
         }
 
-        // Default state (initial)
         return const Scaffold(
           backgroundColor: Color(0xFF0B1519),
           body: Center(
@@ -446,7 +416,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
             children: [
               Row(
                 children: [
-                  // Genuine bottle icon with subtle pulse animation on tap
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 350),
                     width: 48,
@@ -468,8 +437,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                     ),
                   ),
                   const SizedBox(width: 16),
-
-                  // Text
                   Expanded(
                     child: const Text(
                       'Genuine Bottle (Unopened)',
@@ -481,8 +448,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                       ),
                     ),
                   ),
-
-                  // Animated rotating dropdown arrow
                   RotationTransition(
                     turns: _rotationAnimation,
                     child: Icon(
@@ -493,8 +458,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                   ),
                 ],
               ),
-
-              // Animated expanding content
               ClipRect(
                 child: AnimatedBuilder(
                   animation: _expandAnimation,
@@ -649,9 +612,7 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
           ),
         ],
         onTap: (index) {
-          setState(() {
-            // Update state when tab changes to rebuild content
-          });
+          setState(() {});
         },
       ),
     );
@@ -659,7 +620,7 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
 
   Widget _buildTabContent(Whiskey whiskey) {
     switch (_tabController.index) {
-      case 0: // Details tab
+      case 0:
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -676,9 +637,9 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
             _buildDetailRow('Finish', whiskey.caskType),
           ],
         );
-      case 1: // Tasting notes tab
+      case 1:
         return _buildTastingNotesContent(whiskey);
-      case 2: // History tab
+      case 2:
         return _buildHistoryTimeline();
       default:
         return const SizedBox.shrink();
@@ -689,7 +650,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Video thumbnail with play button overlay
         Container(
           width: double.infinity,
           height: 180,
@@ -701,13 +661,11 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Dark background for video
               Container(
                 width: double.infinity,
                 height: double.infinity,
                 color: const Color(0xFF0A1519),
               ),
-              // Play button
               Container(
                 width: 48,
                 height: 48,
@@ -728,10 +686,7 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
             ],
           ),
         ),
-
         const SizedBox(height: 16),
-
-        // Title and expert
         const Text(
           'Tasting notes',
           style: TextStyle(
@@ -742,9 +697,7 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
             letterSpacing: 0.2,
           ),
         ),
-
         const SizedBox(height: 4),
-
         const Text(
           'by Charles MacLean MBE',
           style: TextStyle(
@@ -755,26 +708,17 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
             letterSpacing: 0.1,
           ),
         ),
-
         const SizedBox(height: 24),
-
-        // Nose section
         _buildTastingNotesSection(
           title: 'Nose',
           descriptions: [whiskey.tastingNotes.nose],
         ),
-
         const SizedBox(height: 24),
-
-        // Palate section
         _buildTastingNotesSection(
           title: 'Palate',
           descriptions: [whiskey.tastingNotes.palate],
         ),
-
         const SizedBox(height: 24),
-
-        // Finish section
         _buildTastingNotesSection(
           title: 'Finish',
           descriptions: [whiskey.tastingNotes.finish],
@@ -803,7 +747,7 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
         const SizedBox(height: 8),
         ...descriptions
             .map((description) => Padding(
-                  padding: const EdgeInsets.only(bottom: 6), // slightly more spacing
+                  padding: const EdgeInsets.only(bottom: 6),
                   child: Text(
                     description,
                     style: const TextStyle(
@@ -822,9 +766,8 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
   Widget _buildHistoryTimeline() {
     return Stack(
       children: [
-        // Add a continuous vertical line behind everything
         Positioned(
-          left: 11.5, // Position to align with timeline indicators
+          left: 11.5,
           top: 12,
           bottom: 12,
           width: 2,
@@ -832,16 +775,13 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
             color: const Color(0xFFD49A00),
           ),
         ),
-        // The actual timeline
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Column(
             children: [
-              // First timeline entry
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // White circle
                   Container(
                     width: 24,
                     height: 24,
@@ -851,7 +791,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                     ),
                   ),
                   const SizedBox(width: 16),
-                  // Content
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -901,15 +840,13 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                   ),
                 ],
               ),
-
-              // Diamond markers
               const SizedBox(height: 30),
               Row(
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(left: 9.0),
                     child: Transform.rotate(
-                      angle: 0.785398, // 45 degrees in radians
+                      angle: 0.785398,
                       child: Container(
                         width: 6,
                         height: 6,
@@ -919,14 +856,13 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                   ),
                 ],
               ),
-
               const SizedBox(height: 30),
               Row(
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(left: 7.0),
                     child: Transform.rotate(
-                      angle: 0.785398, // 45 degrees in radians
+                      angle: 0.785398,
                       child: Container(
                         width: 10,
                         height: 10,
@@ -936,14 +872,13 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                   ),
                 ],
               ),
-
               const SizedBox(height: 30),
               Row(
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(left: 9.0),
                     child: Transform.rotate(
-                      angle: 0.785398, // 45 degrees in radians
+                      angle: 0.785398,
                       child: Container(
                         width: 6,
                         height: 6,
@@ -953,14 +888,10 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                   ),
                 ],
               ),
-
               const SizedBox(height: 30),
-
-              // Second timeline entry
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // White circle
                   Container(
                     width: 24,
                     height: 24,
@@ -970,7 +901,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                     ),
                   ),
                   const SizedBox(width: 16),
-                  // Content
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1031,7 +961,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Attachment header with link icon
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: const [
@@ -1053,7 +982,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
           ],
         ),
         const SizedBox(height: 16),
-        // Attachment thumbnails
         Row(
           children: [
             _buildSquareAttachment(),
@@ -1105,12 +1033,10 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
     );
   }
 
-  // Add custom shimmer widget for the title
   Widget _buildShimmerTitle() {
     return AnimatedBuilder(
       animation: _shimmerAnimation,
       builder: (context, child) {
-        // Use a simple TweenSequence to oscillate between colors
         final color = ColorTween(
           begin: const Color(0xFFE7E9EA),
           end: const Color(0xFFDE9A1F),
@@ -1137,14 +1063,11 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
         final editionNumber = '(${(number % 100 + 12)}/${(number % 80 + 100)})';
         return editionNumber;
       }
-    } catch (e) {
-      // Handle the exception by returning an empty string
-    }
+    } catch (e) {}
     return '';
   }
 }
 
-// Custom painter to draw X icon
 class CrossPainter extends CustomPainter {
   final Color color;
 
@@ -1157,14 +1080,12 @@ class CrossPainter extends CustomPainter {
       ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
 
-    // Draw first line (top-left to bottom-right)
     canvas.drawLine(
       Offset(0, 0),
       Offset(size.width, size.height),
       paint,
     );
 
-    // Draw second line (top-right to bottom-left)
     canvas.drawLine(
       Offset(size.width, 0),
       Offset(0, size.height),

@@ -17,13 +17,10 @@ class CollectionBloc extends Bloc<CollectionEvent, CollectionState> {
         super(CollectionInitial()) {
     on<LoadCollection>(_onLoadCollection);
     on<RefreshCollection>(_onRefreshCollection);
-
-    // Trigger initial load
     add(LoadCollection());
   }
 
   Future<void> _onLoadCollection(LoadCollection event, Emitter<CollectionState> emit) async {
-    // Avoid reloading if already loaded, unless forced (handled by RefreshCollection)
     if (state is CollectionLoading) return;
 
     emit(CollectionLoading());
@@ -36,10 +33,8 @@ class CollectionBloc extends Bloc<CollectionEvent, CollectionState> {
   }
 
   Future<void> _onRefreshCollection(RefreshCollection event, Emitter<CollectionState> emit) async {
-    // Always show loading indicator during refresh
     emit(CollectionLoading());
     try {
-      // Use the repository's refresh logic
       final whiskeys = await _collectionRepository.refreshWhiskeys();
       emit(CollectionLoaded(whiskeys));
     } catch (e) {

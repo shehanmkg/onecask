@@ -3,27 +3,21 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
-// Import model
 import '../../../../models/whiskey.dart';
-// Import AuthBloc for logout
-import '../../bloc/collection_bloc.dart'; // Import CollectionBloc
-// Import the bottle details screen
-import 'settings_screen.dart'; // Import settings screen
-// Import Details screen route name when available
-// import 'details_screen.dart';
+import '../../bloc/collection_bloc.dart';
+import 'settings_screen.dart';
 
 class CollectionScreen extends StatefulWidget {
   const CollectionScreen({super.key});
 
-  // Define route name for use with go_router
-  static const String routeName = '/collection'; // Matches placeholder in router
+  static const String routeName = '/collection';
 
   @override
   State<CollectionScreen> createState() => _CollectionScreenState();
 }
 
 class _CollectionScreenState extends State<CollectionScreen> {
-  int _selectedIndex = 1; // Collection tab selected by default
+  int _selectedIndex = 1;
 
   final List<String> _bottleImages = [
     'assets/images/samples/bottle.png',
@@ -35,7 +29,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
   @override
   void initState() {
     super.initState();
-    // Load collection data when screen initializes
     if (context.read<CollectionBloc>().state is! CollectionLoaded) {
       context.read<CollectionBloc>().add(LoadCollection());
     }
@@ -44,13 +37,11 @@ class _CollectionScreenState extends State<CollectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0E1C21), // Updated background color to #0E1C21
+      backgroundColor: const Color(0xFF0E1C21),
       body: Stack(
         children: [
-          // Main content based on selected tab
           _buildMainContent(),
 
-          // Bottom navigation bar
           Positioned(
             left: 0,
             right: 0,
@@ -62,10 +53,9 @@ class _CollectionScreenState extends State<CollectionScreen> {
     );
   }
 
-  // Build main content based on selected tab
   Widget _buildMainContent() {
     switch (_selectedIndex) {
-      case 0: // Scan tab
+      case 0:
         return const Center(
           child: Text(
             'Scan QR Code',
@@ -75,9 +65,9 @@ class _CollectionScreenState extends State<CollectionScreen> {
             ),
           ),
         );
-      case 1: // Collection tab
+      case 1:
         return _buildCollectionContent();
-      case 2: // Shop tab
+      case 2:
         return const Center(
           child: Text(
             'Shop',
@@ -87,14 +77,13 @@ class _CollectionScreenState extends State<CollectionScreen> {
             ),
           ),
         );
-      case 3: // Settings tab
+      case 3:
         return const SettingsScreen();
       default:
         return _buildCollectionContent();
     }
   }
 
-  // Collection tab content
   Widget _buildCollectionContent() {
     return SafeArea(
       child: Column(
@@ -114,7 +103,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
                   ),
                 ),
 
-                // Notification bell with red dot
                 Stack(
                   clipBehavior: Clip.none,
                   children: [
@@ -142,7 +130,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
             ),
           ),
 
-          // Collection grid
           Expanded(
             child: BlocBuilder<CollectionBloc, CollectionState>(
               builder: (context, state) {
@@ -172,20 +159,18 @@ class _CollectionScreenState extends State<CollectionScreen> {
                     child: RefreshIndicator(
                       onRefresh: () async {
                         context.read<CollectionBloc>().add(RefreshCollection());
-                        // Wait for refresh to complete
                         await Future.delayed(const Duration(milliseconds: 800));
                       },
                       color: const Color(0xFFDE9A1F),
                       child: GridView.builder(
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 0.52, // Adjusted for bottle image proportions
+                          childAspectRatio: 0.52,
                           crossAxisSpacing: 8,
                           mainAxisSpacing: 8,
                         ),
-                        physics: const BouncingScrollPhysics(), // Ensure scrolling is always enabled
-                        padding: const EdgeInsets.only(
-                            bottom: 100, top: 8), // Added top padding and increased bottom padding
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.only(bottom: 100, top: 8),
                         itemCount: whiskeys.length,
                         itemBuilder: (context, index) {
                           final whiskey = whiskeys[index];
@@ -221,7 +206,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
                     ),
                   );
                 } else {
-                  // Initial state, show empty state placeholder
                   return const Center(
                     child: Text(
                       'Loading your collection...',
@@ -241,29 +225,24 @@ class _CollectionScreenState extends State<CollectionScreen> {
   }
 
   Widget _buildBottleCard(Whiskey whiskey, int index) {
-    // Extract year from ID or use other information
     String bottleYear = "${whiskey.bottled} #${whiskey.id.split('_').last}";
     String edition = _generateEditionNumber(whiskey.id, index);
 
     return GestureDetector(
       onTap: () {
-        // Navigate to bottle detail screen
         context.go('${CollectionScreen.routeName}/bottle/${whiskey.id}');
       },
       child: Stack(
         children: [
-          // Background container with dark blue color
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF122329), // Darker background for bottle card
+              color: const Color(0xFF122329),
             ),
           ),
 
-          // Content column
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Bottle image taking most of the space
               Expanded(
                 flex: 5,
                 child: Padding(
@@ -275,7 +254,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
                 ),
               ),
 
-              // Bottle information overlay at bottom
               Expanded(
                 flex: 2,
                 child: Container(
@@ -330,7 +308,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
     );
   }
 
-  // Helper method to generate edition number with error handling
   String _generateEditionNumber(String id, int index) {
     try {
       final parts = id.split('_');
@@ -339,9 +316,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
         return '(${number % 200 + 1}/${number % 100 + 100})';
       }
     } catch (e) {
-      // Fallback to using index if id parsing fails
     }
-    // Use index-based fallback without referencing whiskey object
     return index % 2 == 0
         ? "(${(index * 14 + 16)}/${(index * 24 + 94)})"
         : "(${(index * 24 + 43)}/${(index * 46 + 112)})";
@@ -358,7 +333,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Tab items row
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
@@ -378,22 +352,21 @@ class _CollectionScreenState extends State<CollectionScreen> {
   }
 
   Widget _buildNavItem(int index, String label, bool isSelected) {
-    // Get SVG icons from assets
     Widget getIcon(int index, bool isSelected) {
       final color = isSelected ? Colors.white : const Color(0xFF899194);
       final String iconPath;
 
       switch (index) {
-        case 0: // Scan
+        case 0:
           iconPath = 'assets/icons/ic_scan.svg';
           break;
-        case 1: // Collection
+        case 1:
           iconPath = 'assets/icons/ic_collection.svg';
           break;
-        case 2: // Shop (bottle)
+        case 2:
           iconPath = 'assets/icons/ic_bottle.svg';
           break;
-        case 3: // Settings
+        case 3:
           iconPath = 'assets/icons/ic_settings.svg';
           break;
         default:

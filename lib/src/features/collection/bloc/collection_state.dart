@@ -7,13 +7,10 @@ abstract class CollectionState extends Equatable {
   List<Object> get props => [];
 }
 
-// Initial state, before any loading attempt
 class CollectionInitial extends CollectionState {}
 
-// State while items are being loaded or refreshed
 class CollectionLoading extends CollectionState {}
 
-// State when items have been successfully loaded
 class CollectionLoaded extends CollectionState {
   final List<Whiskey> whiskeys;
 
@@ -23,7 +20,6 @@ class CollectionLoaded extends CollectionState {
   List<Object> get props => [whiskeys];
 }
 
-// State when an error occurs during loading or refreshing
 class CollectionError extends CollectionState {
   final String message;
 

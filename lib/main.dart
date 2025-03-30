@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:google_fonts/google_fonts.dart';
 import 'package:one_cask/src/core/di/service_locator.dart';
-import 'package:one_cask/src/core/router/app_router.dart'; // Import AppRouter
-import 'package:one_cask/src/features/auth/bloc/auth_bloc.dart'; // Import AuthBloc
-import 'package:one_cask/src/features/collection/bloc/collection_bloc.dart'; // Import CollectionBloc
+import 'package:one_cask/src/core/router/app_router.dart';
+import 'package:one_cask/src/features/auth/bloc/auth_bloc.dart';
+import 'package:one_cask/src/features/collection/bloc/collection_bloc.dart';
 
 void main() async {
-  // Ensure bindings are initialized before using plugins like shared_preferences
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Setup dependency injection
   await setupServiceLocator();
-
   runApp(const MyApp());
 }
 
@@ -30,21 +25,19 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _authBloc = AuthBloc(); // Create the AuthBloc instance
-    _appRouter = AppRouter(authBloc: _authBloc); // Create the AppRouter instance
+    _authBloc = AuthBloc();
+    _appRouter = AppRouter(authBloc: _authBloc);
   }
 
   @override
   void dispose() {
-    _authBloc.close(); // Close the auth bloc
-    _appRouter.router.dispose(); // Dispose the router resources (like the listener)
+    _authBloc.close();
+    _appRouter.router.dispose();
     super.dispose();
   }
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    // Create text themes with EB Garamond and Lato
     final textTheme = TextTheme(
       displayLarge: const TextStyle(
         fontFamily: 'EBGaramond',
@@ -88,28 +81,26 @@ class _MyAppState extends State<MyApp> {
       ),
     );
 
-    // Use MultiBlocProvider to provide all necessary Blocs
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: _authBloc),
-        // Provide CollectionBloc using GetIt dependency injection
         BlocProvider(
           create: (context) => getIt<CollectionBloc>(),
         ),
       ],
       child: MaterialApp.router(
-        title: 'One Cask', // Updated app title
+        title: 'One Cask',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFFDE9A1F), // Updated to exact gold color from screenshots
-            primary: const Color(0xFFDE9A1F), // Gold
-            secondary: const Color(0xFF83A9B8), // Teal/blue accent
-            background: const Color(0xFF001A2C), // Dark blue background
-            surface: const Color(0xFF0A1F2E), // Slightly lighter blue for cards
+            seedColor: const Color(0xFFDE9A1F),
+            primary: const Color(0xFFDE9A1F),
+            secondary: const Color(0xFF83A9B8),
+            background: const Color(0xFF001A2C),
+            surface: const Color(0xFF0A1F2E),
           ),
           appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFF001A2C), // Dark blue/teal
-            foregroundColor: Color(0xFFDE9A1F), // Gold text
+            backgroundColor: Color(0xFF001A2C),
+            foregroundColor: Color(0xFFDE9A1F),
             elevation: 0,
             titleTextStyle: TextStyle(
               fontFamily: 'EBGaramond',
@@ -120,12 +111,12 @@ class _MyAppState extends State<MyApp> {
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFDE9A1F), // Gold
-              foregroundColor: Colors.black87, // Dark text on gold buttons
+              backgroundColor: const Color(0xFFDE9A1F),
+              foregroundColor: Colors.black87,
               elevation: 0,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30), // Rounded corners matching design
+                borderRadius: BorderRadius.circular(30),
               ),
               textStyle: const TextStyle(
                 fontFamily: 'Lato',
@@ -135,9 +126,9 @@ class _MyAppState extends State<MyApp> {
             ),
           ),
           tabBarTheme: const TabBarTheme(
-            labelColor: Colors.black87, // Selected tab text color
-            unselectedLabelColor: Colors.white, // Unselected tab text color
-            indicatorColor: Color(0xFFDE9A1F), // Gold indicator
+            labelColor: Colors.black87,
+            unselectedLabelColor: Colors.white,
+            indicatorColor: Color(0xFFDE9A1F),
             indicatorSize: TabBarIndicatorSize.tab,
             labelStyle: TextStyle(
               fontFamily: 'Lato',
@@ -156,18 +147,18 @@ class _MyAppState extends State<MyApp> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFDE9A1F), width: 2), // Updated gold color
+              borderSide: const BorderSide(color: Color(0xFFDE9A1F), width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             labelStyle: const TextStyle(fontFamily: 'Lato', color: Colors.white70),
             hintStyle: const TextStyle(fontFamily: 'Lato', color: Colors.white54),
           ),
           textTheme: textTheme,
-          fontFamily: 'Lato', // Default font for the app
+          fontFamily: 'Lato',
           useMaterial3: true,
         ),
-        debugShowCheckedModeBanner: false, // Optional: hide debug banner
-        routerConfig: _appRouter.router, // Use the go_router configuration
+        debugShowCheckedModeBanner: false,
+        routerConfig: _appRouter.router,
       ),
     );
   }

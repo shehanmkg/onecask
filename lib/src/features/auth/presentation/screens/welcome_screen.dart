@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-// Import Login screen route name
 import 'login_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
-  // Define route name for potential use with go_router
   static const String routeName = '/welcome';
 
   @override
@@ -16,7 +14,7 @@ class WelcomeScreen extends StatelessWidget {
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
-          color: Color(0xFF0B1519), //
+          color: Color(0xFF0B1519),
           image: DecorationImage(
             image: AssetImage('assets/images/background.png'),
             fit: BoxFit.cover,
@@ -24,12 +22,10 @@ class WelcomeScreen extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // Main content positioned at the bottom
             SafeArea(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  // Content container with semi-transparent dark background
                   Container(
                     width: double.infinity,
                     margin: const EdgeInsets.fromLTRB(24, 0, 24, 48),
@@ -40,7 +36,6 @@ class WelcomeScreen extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Welcome text
                         Text(
                           'Welcome!',
                           style: const TextStyle(
@@ -60,7 +55,6 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 36),
-                        // Scan bottle button
                         SizedBox(
                           width: double.infinity,
                           height: 56,
@@ -76,14 +70,13 @@ class WelcomeScreen extends StatelessWidget {
                             ),
                             child: ElevatedButton(
                               onPressed: () {
-                                // Add scan bottle functionality
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFD49A00), // Darker gold/orange color
+                                backgroundColor: const Color(0xFFD49A00),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                elevation: 4, // 40% opacity black shadow
+                                elevation: 4,
                               ),
                               child: const Text(
                                 'Scan bottle',
@@ -97,7 +90,6 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 28),
-                        // Login link
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -122,7 +114,7 @@ class WelcomeScreen extends StatelessWidget {
                                 'Sign in first',
                                 style: const TextStyle(
                                   fontFamily: 'EBGaramond',
-                                  color: Color(0xFFFFB901), // Darker gold/orange color
+                                  color: Color(0xFFFFB901),
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),
