@@ -294,8 +294,8 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
-                                        // Generate edition numbers based on ID
-                                        "(${(int.parse(whiskey.id.split('_').last) % 100 + 12)}/${(int.parse(whiskey.id.split('_').last) % 80 + 100)})",
+                                        // Generate edition numbers based on ID with error handling
+                                        _generateEditionNumber(whiskey.id),
                                         style: const TextStyle(
                                           fontFamily: 'Lato',
                                           color: Color(0xFFD7D5D1),
@@ -305,17 +305,6 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
                                         ),
                                       ),
                                     ],
-                                  ),
-
-                                  // Bottle ID
-                                  Text(
-                                    '#${whiskey.id}',
-                                    style: const TextStyle(
-                                      fontFamily: 'EBGaramond',
-                                      color: Color(0xFFE7E9EA),
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.w500,
-                                    ),
                                   ),
                                   const SizedBox(height: 24),
 
@@ -1138,6 +1127,20 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
         );
       },
     );
+  }
+
+  String _generateEditionNumber(String id) {
+    try {
+      final parts = id.split('_');
+      if (parts.length == 2) {
+        final number = int.parse(parts.last);
+        final editionNumber = '(${(number % 100 + 12)}/${(number % 80 + 100)})';
+        return editionNumber;
+      }
+    } catch (e) {
+      // Handle the exception by returning an empty string
+    }
+    return '';
   }
 }
 

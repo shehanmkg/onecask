@@ -243,10 +243,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
   Widget _buildBottleCard(Whiskey whiskey, int index) {
     // Extract year from ID or use other information
     String bottleYear = "${whiskey.bottled} #${whiskey.id.split('_').last}";
-    String edition = whiskey.limitedEdition
-        ? "(${(index * 14 + 16)}/${(index * 24 + 94)})"
-        : // Sample edition numbers
-        "(${(index * 24 + 43)}/${(index * 46 + 112)})"; // Sample edition numbers for variety
+    String edition = _generateEditionNumber(whiskey.id, index);
 
     return GestureDetector(
       onTap: () {
@@ -331,6 +328,23 @@ class _CollectionScreenState extends State<CollectionScreen> {
         ],
       ),
     );
+  }
+
+  // Helper method to generate edition number with error handling
+  String _generateEditionNumber(String id, int index) {
+    try {
+      final parts = id.split('_');
+      if (parts.length == 2) {
+        final number = int.parse(parts.last);
+        return '(${number % 200 + 1}/${number % 100 + 100})';
+      }
+    } catch (e) {
+      // Fallback to using index if id parsing fails
+    }
+    // Use index-based fallback without referencing whiskey object
+    return index % 2 == 0
+        ? "(${(index * 14 + 16)}/${(index * 24 + 94)})"
+        : "(${(index * 24 + 43)}/${(index * 46 + 112)})";
   }
 
   Widget _buildBottomNavigationBar() {
