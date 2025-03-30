@@ -1,0 +1,47 @@
+[
+  {
+    "id": "distillery_001",
+    "name": "The Macallan",
+    "location": "Craigellachie, Speyside, Scotland",
+    "founded": 1824,
+    "description": "One of the world's most collectible distilleries known for its exceptional sherry cask matured single malts.",
+    "owner": "Edrington Group",
+    "image": "assets/distillery_images/macallan.png"
+  },
+  {
+    "id": "distillery_002",
+    "name": "Lagavulin",
+    "location": "Port Ellen, Islay, Scotland",
+    "founded": 1816,
+    "description": "Known for its distinctively robust and smoky malt whiskies. A true Islay icon.",
+    "owner": "Diageo",
+    "image": "assets/distillery_images/macallan.png"
+  },
+  {
+    "id": "distillery_003",
+    "name": "Yamazaki",
+    "location": "Shimamoto, Osaka Prefecture, Japan",
+    "founded": 1923,
+    "description": "Japan's first commercial whisky distillery, producing internationally acclaimed single malts with a distinctive Japanese character.",
+    "owner": "Suntory",
+    "image": "assets/distillery_images/macallan.png"
+  },
+  {
+    "id": "distillery_004",
+    "name": "Highland Park",
+    "location": "Kirkwall, Orkney Islands, Scotland",
+    "founded": 1798,
+    "description": "The northernmost Scottish distillery, known for its balanced profile of gentle smoke, rich fruit, and honey sweetness.",
+    "owner": "Edrington Group",
+    "image": "assets/distillery_images/macallan.png"
+  },
+  {
+    "id": "distillery_005",
+    "name": "Springbank",
+    "location": "Campbeltown, Scotland",
+    "founded": 1828,
+    "description": "One of the few distilleries to perform every step of the whisky-making process on site. Known for complex, oily character with light peat influence.",
+    "owner": "J & A Mitchell & Co Ltd",
+    "image": "assets/distillery_images/macallan.png"
+  }
+]

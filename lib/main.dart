@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 // import 'package:google_fonts/google_fonts.dart';
+import 'package:one_cask/src/core/di/service_locator.dart';
 import 'package:one_cask/src/core/router/app_router.dart'; // Import AppRouter
-import 'package:one_cask/src/data/collection_repository.dart'; // Import CollectionRepository
 import 'package:one_cask/src/features/auth/bloc/auth_bloc.dart'; // Import AuthBloc
 import 'package:one_cask/src/features/collection/bloc/collection_bloc.dart'; // Import CollectionBloc
 
-void main() {
+void main() async {
   // Ensure bindings are initialized before using plugins like shared_preferences
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Setup dependency injection
+  await setupServiceLocator();
+
   runApp(const MyApp());
 }
 
@@ -21,23 +25,18 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late final AuthBloc _authBloc;
-  late final CollectionRepository _collectionRepository; // Added
-  late final CollectionBloc _collectionBloc; // Added
   late final AppRouter _appRouter;
 
   @override
   void initState() {
     super.initState();
     _authBloc = AuthBloc(); // Create the AuthBloc instance
-    _collectionRepository = CollectionRepository(); // Create Repository instance
-    _collectionBloc = CollectionBloc(collectionRepository: _collectionRepository); // Create CollectionBloc
     _appRouter = AppRouter(authBloc: _authBloc); // Create the AppRouter instance
   }
 
   @override
   void dispose() {
     _authBloc.close(); // Close the auth bloc
-    _collectionBloc.close(); // Close the collection bloc
     _appRouter.router.dispose(); // Dispose the router resources (like the listener)
     super.dispose();
   }
@@ -93,10 +92,9 @@ class _MyAppState extends State<MyApp> {
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: _authBloc),
-        // Provide CollectionBloc using its repository dependency
+        // Provide CollectionBloc using GetIt dependency injection
         BlocProvider(
-          create: (context) => _collectionBloc,
-          // Optionally set lazy: false if you need it to load immediately
+          create: (context) => getIt<CollectionBloc>(),
         ),
       ],
       child: MaterialApp.router(

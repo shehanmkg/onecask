@@ -30,6 +30,8 @@ dependencies:
   go_router: ^13.0.1
   timelines_plus: ^1.0.6
 
+  get_it: ^7.6.7
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -111,3 +113,4 @@ flutter:
       - asset: assets/fonts/Lato/Lato-BlackItalic.ttf
         weight: 900
         style: italic 
+get_it: ^7.6.7

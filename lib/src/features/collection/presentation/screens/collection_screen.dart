@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 // Import model
+import '../../../../models/whiskey.dart';
 // Import AuthBloc for logout
 import '../../bloc/collection_bloc.dart'; // Import CollectionBloc
 // Import the bottle details screen
@@ -151,24 +152,83 @@ class _CollectionScreenState extends State<CollectionScreen> {
                       color: Color(0xFFDE9A1F),
                     ),
                   );
-                } else {
-                  // Using sample bottle data for now
+                } else if (state is CollectionLoaded) {
+                  final whiskeys = state.whiskeys;
+
+                  if (whiskeys.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'No whiskeys in your collection yet',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    );
+                  }
+
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                    child: GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.52, // Adjusted for bottle image proportions
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                      ),
-                      physics: const BouncingScrollPhysics(), // Ensure scrolling is always enabled
-                      padding:
-                          const EdgeInsets.only(bottom: 100, top: 8), // Added top padding and increased bottom padding
-                      itemCount: 6, // Increased count to test scrolling
-                      itemBuilder: (context, index) {
-                        return _buildBottleCard(index % 4); // Use modulo to reuse the sample data
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        context.read<CollectionBloc>().add(RefreshCollection());
+                        // Wait for refresh to complete
+                        await Future.delayed(const Duration(milliseconds: 800));
                       },
+                      color: const Color(0xFFDE9A1F),
+                      child: GridView.builder(
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.52, // Adjusted for bottle image proportions
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                        ),
+                        physics: const BouncingScrollPhysics(), // Ensure scrolling is always enabled
+                        padding: const EdgeInsets.only(
+                            bottom: 100, top: 8), // Added top padding and increased bottom padding
+                        itemCount: whiskeys.length,
+                        itemBuilder: (context, index) {
+                          final whiskey = whiskeys[index];
+                          return _buildBottleCard(whiskey, index);
+                        },
+                      ),
+                    ),
+                  );
+                } else if (state is CollectionError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Error: ${state.message}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            context.read<CollectionBloc>().add(RefreshCollection());
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFDE9A1F),
+                          ),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  // Initial state, show empty state placeholder
+                  return const Center(
+                    child: Text(
+                      'Loading your collection...',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
                     ),
                   );
                 }
@@ -180,35 +240,18 @@ class _CollectionScreenState extends State<CollectionScreen> {
     );
   }
 
-  Widget _buildBottleCard(int index) {
-    // Sample data for bottles
-    final List<Map<String, String>> bottleData = [
-      {
-        'distillery': 'Springbank',
-        'year': '1992 #1234',
-        'edition': '(112/158)',
-      },
-      {
-        'distillery': 'Macallan',
-        'year': '1989 #0837',
-        'edition': '(43/112)',
-      },
-      {
-        'distillery': 'Ardbeg',
-        'year': '2005 #2341',
-        'edition': '(87/220)',
-      },
-      {
-        'distillery': 'Bowmore',
-        'year': '1998 #0512',
-        'edition': '(16/94)',
-      },
-    ];
+  Widget _buildBottleCard(Whiskey whiskey, int index) {
+    // Extract year from ID or use other information
+    String bottleYear = "${whiskey.bottled} #${whiskey.id.split('_').last}";
+    String edition = whiskey.limitedEdition
+        ? "(${(index * 14 + 16)}/${(index * 24 + 94)})"
+        : // Sample edition numbers
+        "(${(index * 24 + 43)}/${(index * 46 + 112)})"; // Sample edition numbers for variety
 
     return GestureDetector(
       onTap: () {
         // Navigate to bottle detail screen
-        context.go('${CollectionScreen.routeName}/bottle/${index + 1}');
+        context.go('${CollectionScreen.routeName}/bottle/${whiskey.id}');
       },
       child: Stack(
         children: [
@@ -245,7 +288,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        bottleData[index]['distillery']!,
+                        whiskey.distillery,
                         style: const TextStyle(
                           fontFamily: 'EBGaramond',
                           color: Color(0xFFE7E9EA),
@@ -257,7 +300,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        bottleData[index]['year']!,
+                        bottleYear,
                         style: const TextStyle(
                           fontFamily: 'EBGaramond',
                           color: Color(0xFFE7E9EA),
@@ -270,7 +313,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        bottleData[index]['edition']!,
+                        edition,
                         style: const TextStyle(
                           fontFamily: 'Lato',
                           color: Color(0xFFD7D5D1),

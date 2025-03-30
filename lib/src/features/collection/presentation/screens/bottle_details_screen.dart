@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../models/whiskey.dart';
+import '../../bloc/collection_bloc.dart';
 
 class BottleDetailsScreen extends StatefulWidget {
   final String bottleId;
@@ -116,163 +120,276 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0B1519), // Updated darker background color
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/background.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Top bar with collection name and close button
-              _buildTopBar(),
+    return BlocBuilder<CollectionBloc, CollectionState>(
+      builder: (context, state) {
+        if (state is CollectionLoading) {
+          return const Scaffold(
+            backgroundColor: Color(0xFF0B1519),
+            body: Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFFDE9A1F),
+              ),
+            ),
+          );
+        }
 
-              // Bottle type / authenticity section
-              _buildAuthenticitySection(),
+        if (state is CollectionError) {
+          return Scaffold(
+            backgroundColor: const Color(0xFF0B1519),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Error: ${state.message}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<CollectionBloc>().add(RefreshCollection());
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFDE9A1F),
+                    ),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
-              const SizedBox(height: 25),
+        if (state is CollectionLoaded) {
+          // Find the whiskey in the loaded list
+          Whiskey? whiskey;
+          for (final item in state.whiskeys) {
+            if (item.id == widget.bottleId) {
+              whiskey = item;
+              break;
+            }
+          }
 
-              // Rest of content in scrollable area
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      // Bottle image
-                      SizedBox(
-                        height: size.height * 0.4,
-                        child: Center(
-                          child: Image.asset(
-                            'assets/images/one_cask_bottle.png',
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(
-                                Icons.photo_outlined,
-                                color: Color(0xFFDE9A1F),
-                                size: 120,
-                              );
-                            },
-                          ),
-                        ),
+          if (whiskey == null) {
+            return Scaffold(
+              backgroundColor: const Color(0xFF0B1519),
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Whiskey not found',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
                       ),
-                      const SizedBox(height: 25),
-                      // Bottle information container
-                      Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        padding: const EdgeInsets.all(24),
-                        color: const Color(0xFF122329), // Slightly lighter blue with opacity
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFDE9A1F),
+                      ),
+                      child: const Text('Go Back'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          // Continue with the original UI but use the whiskey data
+          return Scaffold(
+            backgroundColor: const Color(0xFF0B1519),
+            body: Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/background.png'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    // Top bar with collection name and close button
+                    _buildTopBar(),
+
+                    // Bottle type / authenticity section
+                    _buildAuthenticitySection(),
+
+                    const SizedBox(height: 25),
+
+                    // Rest of content in scrollable area
+                    Expanded(
+                      child: SingleChildScrollView(
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Bottle number
-                            Text(
-                              'Bottle 135/184',
-                              style: const TextStyle(
-                                fontFamily: 'Lato',
-                                color: Color(0xFFB8BDBF),
-                                fontSize: 12,
+                            // Bottle image
+                            SizedBox(
+                              height: size.height * 0.4,
+                              child: Center(
+                                child: Image.asset(
+                                  'assets/images/one_cask_bottle.png',
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(
+                                      Icons.photo_outlined,
+                                      color: Color(0xFFDE9A1F),
+                                      size: 120,
+                                    );
+                                  },
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 8),
-
-                            // Bottle title with colored year
-                            Row(
-                              children: [
-                                Text(
-                                  'Talisker ',
-                                  style: const TextStyle(
-                                    fontFamily: 'EBGaramond',
-                                    color: Color(0xFFE7E9EA),
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.w500,
+                            const SizedBox(height: 25),
+                            // Bottle information container
+                            Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.symmetric(horizontal: 16),
+                              padding: const EdgeInsets.all(24),
+                              color: const Color(0xFF122329), // Slightly lighter blue with opacity
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Bottle number
+                                  Text(
+                                    whiskey.limitedEdition ? 'Limited Edition' : 'Standard Release',
+                                    style: const TextStyle(
+                                      fontFamily: 'Lato',
+                                      color: Color(0xFFB8BDBF),
+                                      fontSize: 12,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  '18 Year old',
-                                  style: const TextStyle(
-                                    fontFamily: 'EBGaramond',
-                                    color: Color(0xFFD49A00),
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
+                                  const SizedBox(height: 8),
 
-                            // Bottle ID
-                            Text(
-                              '#2504',
-                              style: const TextStyle(
-                                fontFamily: 'EBGaramond',
-                                color: Color(0xFFE7E9EA),
-                                fontSize: 32,
-                                fontWeight: FontWeight.w500,
+                                  // Bottle title with colored year
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        whiskey.distillery,
+                                        style: const TextStyle(
+                                          fontFamily: 'EBGaramond',
+                                          color: Color(0xFFE7E9EA),
+                                          fontSize: 42,
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.1,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${whiskey.bottled} #${whiskey.id.split('_').last}',
+                                        style: const TextStyle(
+                                          fontFamily: 'EBGaramond',
+                                          color: Color(0xFFE7E9EA),
+                                          fontSize: 42,
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.1,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        // Generate edition numbers based on ID
+                                        "(${(int.parse(whiskey.id.split('_').last) % 100 + 12)}/${(int.parse(whiskey.id.split('_').last) % 80 + 100)})",
+                                        style: const TextStyle(
+                                          fontFamily: 'Lato',
+                                          color: Color(0xFFD7D5D1),
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.0,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  // Bottle ID
+                                  Text(
+                                    '#${whiskey.id}',
+                                    style: const TextStyle(
+                                      fontFamily: 'EBGaramond',
+                                      color: Color(0xFFE7E9EA),
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+
+                                  // Tabs
+                                  _buildTabBar(whiskey),
+
+                                  const SizedBox(height: 24),
+
+                                  // Tab content
+                                  _buildTabContent(whiskey),
+                                ],
                               ),
                             ),
                             const SizedBox(height: 24),
 
-                            // Tabs
-                            _buildTabBar(),
-
+                            // Add to collection button - moved outside the tab content container
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: Colors.transparent,
+                              ),
+                              child: ElevatedButton.icon(
+                                icon: const Icon(
+                                  Icons.add,
+                                  size: 24,
+                                  color: Color(0xFF0B1519),
+                                ),
+                                label: Text(
+                                  whiskey.inCollection ? 'Already in collection' : 'Add to my collection',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF0B1519),
+                                    fontFamily: 'EBGaramond',
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFD49A00),
+                                  foregroundColor: const Color(0xFF0E1C21),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  elevation: 3,
+                                  shadowColor: const Color(0xFF0B1519).withOpacity(0.3),
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                ),
+                                onPressed: whiskey.inCollection ? null : () {},
+                              ),
+                            ),
                             const SizedBox(height: 24),
-
-                            // Tab content
-                            _buildTabContent(),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
-
-                      // Add to collection button - moved outside the tab content container
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 20),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: Colors.transparent,
-                        ),
-                        child: ElevatedButton.icon(
-                          icon: const Icon(
-                            Icons.add,
-                            size: 24,
-                            color: Color(0xFF0B1519),
-                          ),
-                          label: const Text(
-                            'Add to my collection',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF0B1519),
-                              fontFamily: 'EBGaramond',
-                              letterSpacing: 0.2,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFD49A00),
-                            foregroundColor: const Color(0xFF0E1C21),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            elevation: 3,
-                            shadowColor: const Color(0xFF0B1519).withValues(alpha: 0.3),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          ),
-                          onPressed: () {},
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
+          );
+        }
+
+        // Default state (initial)
+        return const Scaffold(
+          backgroundColor: Color(0xFF0B1519),
+          body: Center(
+            child: CircularProgressIndicator(
+              color: Color(0xFFDE9A1F),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -500,7 +617,7 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
     );
   }
 
-  Widget _buildTabBar() {
+  Widget _buildTabBar(Whiskey whiskey) {
     return Container(
       padding: EdgeInsets.zero,
       decoration: BoxDecoration(
@@ -551,27 +668,27 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
     );
   }
 
-  Widget _buildTabContent() {
+  Widget _buildTabContent(Whiskey whiskey) {
     switch (_tabController.index) {
       case 0: // Details tab
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDetailRow('Distillery', 'Text'),
-            _buildDetailRow('Region', 'Text'),
-            _buildDetailRow('Country', 'Text'),
-            _buildDetailRow('Type', 'Text'),
-            _buildDetailRow('Age statement', 'Text'),
-            _buildDetailRow('Filled', 'Text'),
-            _buildDetailRow('Bottled', 'Text'),
-            _buildDetailRow('Cask number', 'Text'),
-            _buildDetailRow('ABV', 'Text'),
-            _buildDetailRow('Size', 'Text'),
-            _buildDetailRow('Finish', 'Text'),
+            _buildDetailRow('Distillery', whiskey.distillery),
+            _buildDetailRow('Region', whiskey.region),
+            _buildDetailRow('Country', whiskey.region.split(',').last.trim()),
+            _buildDetailRow('Type', 'Single Malt'),
+            _buildDetailRow('Age statement', '${whiskey.age} years'),
+            _buildDetailRow('Filled', ''),
+            _buildDetailRow('Bottled', whiskey.bottled),
+            _buildDetailRow('Cask number', '#${whiskey.id.split('_').last}'),
+            _buildDetailRow('ABV', '${whiskey.abv}%'),
+            _buildDetailRow('Size', '750ml'),
+            _buildDetailRow('Finish', whiskey.caskType),
           ],
         );
       case 1: // Tasting notes tab
-        return _buildTastingNotesContent();
+        return _buildTastingNotesContent(whiskey);
       case 2: // History tab
         return _buildHistoryTimeline();
       default:
@@ -579,7 +696,7 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
     }
   }
 
-  Widget _buildTastingNotesContent() {
+  Widget _buildTastingNotesContent(Whiskey whiskey) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -655,11 +772,7 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
         // Nose section
         _buildTastingNotesSection(
           title: 'Nose',
-          descriptions: const [
-            'Description',
-            'Description',
-            'Description',
-          ],
+          descriptions: [whiskey.tastingNotes.nose],
         ),
 
         const SizedBox(height: 24),
@@ -667,11 +780,7 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
         // Palate section
         _buildTastingNotesSection(
           title: 'Palate',
-          descriptions: const [
-            'Description',
-            'Description',
-            'Description',
-          ],
+          descriptions: [whiskey.tastingNotes.palate],
         ),
 
         const SizedBox(height: 24),
@@ -679,11 +788,7 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
         // Finish section
         _buildTastingNotesSection(
           title: 'Finish',
-          descriptions: const [
-            'Description',
-            'Description',
-            'Description',
-          ],
+          descriptions: [whiskey.tastingNotes.finish],
         ),
       ],
     );

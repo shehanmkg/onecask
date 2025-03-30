@@ -1,30 +1,28 @@
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 
-import '../models/collection_item.dart';
+import '../models/whiskey.dart';
 import 'local/database_helper.dart';
 
 class CollectionDataProvider {
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  final DatabaseHelper _dbHelper;
+
+  CollectionDataProvider({required DatabaseHelper dbHelper}) : _dbHelper = dbHelper;
 
   // Simulates fetching data from a network source (by reading local JSON)
-  Future<List<CollectionItem>> fetchMockData() async {
+  Future<List<Whiskey>> fetchMockData() async {
     try {
-      // Simulate network delay
-      await Future.delayed(const Duration(milliseconds: 800));
-
+      // Load mock data from JSON file
       final String response = await rootBundle.loadString('assets/mock_data/collection.json');
       final List<dynamic> data = json.decode(response) as List<dynamic>;
 
-      // Simulate potential network error (uncomment to test error handling)
-      // if (DateTime.now().second % 2 == 0) {
-      //   throw Exception("Simulated network error");
-      // }
+      final whiskeys = data.map((jsonItem) => Whiskey.fromJson(jsonItem as Map<String, dynamic>)).toList();
+      print("Fetched ${whiskeys.length} whiskeys from mock JSON.");
 
-      final items = data.map((jsonItem) => CollectionItem.fromJson(jsonItem as Map<String, dynamic>)).toList();
-      print("Fetched ${items.length} items from mock JSON.");
-      return items;
+      // Cache the whiskeys
+      await _dbHelper.upsertWhiskeys(whiskeys);
 
+      return whiskeys;
     } catch (e) {
       print("Error fetching mock data: $e");
       // Re-throw the exception so the Repository can handle it
@@ -33,35 +31,32 @@ class CollectionDataProvider {
   }
 
   // Get items currently stored in the local database cache
-  Future<List<CollectionItem>> getCachedItems() async {
+  Future<List<Whiskey>> getCachedWhiskeys() async {
     try {
-      final items = await _dbHelper.getCollectionItems();
-      print("Retrieved ${items.length} items from database cache.");
-      return items;
+      final whiskeys = await _dbHelper.getWhiskeys();
+      print("Retrieved ${whiskeys.length} whiskeys from database cache.");
+      return whiskeys;
     } catch (e) {
-      print("Error getting cached items: $e");
+      print("Error getting cached whiskeys: $e");
       return []; // Return empty list on error
     }
   }
 
-  // Save a list of items to the local database cache (overwrites existing)
-  Future<void> cacheItems(List<CollectionItem> items) async {
+  // Save a list of whiskeys to the local database cache (overwrites existing)
+  Future<void> cacheWhiskeys(List<Whiskey> whiskeys) async {
     try {
-      // Consider clearing before upserting if you always want a fresh cache
-      // await _dbHelper.clearCollectionItems();
-      await _dbHelper.upsertCollectionItems(items);
-      print("Cached ${items.length} items to database.");
+      await _dbHelper.upsertWhiskeys(whiskeys);
+      print("Cached ${whiskeys.length} whiskeys to database.");
     } catch (e) {
-      print("Error caching items: $e");
-      // Decide if error should be propagated
+      print("Error caching whiskeys: $e");
     }
   }
 
-   // Clear all items from the cache
+  // Clear all whiskeys from the cache
   Future<void> clearCache() async {
-     try {
-      await _dbHelper.clearCollectionItems();
-      print("Cleared database cache.");
+    try {
+      await _dbHelper.clearWhiskeys();
+      print("Cleared whiskeys from database cache.");
     } catch (e) {
       print("Error clearing cache: $e");
     }

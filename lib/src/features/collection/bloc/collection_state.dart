@@ -15,12 +15,12 @@ class CollectionLoading extends CollectionState {}
 
 // State when items have been successfully loaded
 class CollectionLoaded extends CollectionState {
-  final List<CollectionItem> items;
+  final List<Whiskey> whiskeys;
 
-  const CollectionLoaded(this.items);
+  const CollectionLoaded(this.whiskeys);
 
   @override
-  List<Object> get props => [items];
+  List<Object> get props => [whiskeys];
 }
 
 // State when an error occurs during loading or refreshing

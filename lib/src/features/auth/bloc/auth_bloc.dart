@@ -19,8 +19,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     add(CheckAuthStatus());
   }
 
-  Future<void> _onCheckAuthStatus(
-      CheckAuthStatus event, Emitter<AuthState> emit) async {
+  Future<void> _onCheckAuthStatus(CheckAuthStatus event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -38,8 +37,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onLoginRequested(
-      LoginRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onLoginRequested(LoginRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
       // --- Mock Login Logic ---
@@ -57,13 +55,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       // --- End Mock Login Logic ---
     } catch (e) {
       emit(AuthError(message: "Login failed: ${e.toString()}"));
-       await Future.delayed(const Duration(milliseconds: 50));
-       emit(Unauthenticated()); // Ensure state consistency on error
+      await Future.delayed(const Duration(milliseconds: 50));
+      emit(Unauthenticated()); // Ensure state consistency on error
     }
   }
 
-  Future<void> _onLogoutRequested(
-      LogoutRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onLogoutRequested(LogoutRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -71,10 +68,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await Future.delayed(const Duration(milliseconds: 500)); // Simulate delay
       emit(Unauthenticated());
     } catch (e) {
-       emit(AuthError(message: "Logout failed: ${e.toString()}"));
-       // Even on logout error, treat as unauthenticated
-       await Future.delayed(const Duration(milliseconds: 50));
-       emit(Unauthenticated());
+      emit(AuthError(message: "Logout failed: ${e.toString()}"));
+      // Even on logout error, treat as unauthenticated
+      await Future.delayed(const Duration(milliseconds: 50));
+      emit(Unauthenticated());
     }
   }
 }
