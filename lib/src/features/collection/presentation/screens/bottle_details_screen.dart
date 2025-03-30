@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:timeline_tile/timeline_tile.dart';
 
 class BottleDetailsScreen extends StatefulWidget {
   final String bottleId;
@@ -727,163 +726,202 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
   }
 
   Widget _buildHistoryTimeline() {
-    // Define a consistent line position
-    const double linePosition = 12;
-
     return Stack(
       children: [
-        // Continuous vertical gold line
+        // Add a continuous vertical line behind everything
         Positioned(
-          left: linePosition, // Use consistent value
-          top: 12, // Start below the first white circle's center
-          bottom: 12, // End above the last white circle's center
+          left: 11.5, // Position to align with timeline indicators
+          top: 12,
+          bottom: 12,
+          width: 2,
           child: Container(
-            width: 2,
             color: const Color(0xFFD49A00),
           ),
         ),
-
-        // Timeline content
+        // The actual timeline
         Padding(
-          padding: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // First timeline item with white circle
+              // First timeline entry
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // White circle indicator - position to center over the timeline
-                  SizedBox(
+                  // White circle
+                  Container(
                     width: 24,
                     height: 24,
-                    child: Stack(
-                      children: [
-                        // Center the circle on the line
-                        Positioned(
-                          left: 0,
-                          top: 0,
-                          child: Container(
-                            width: 24,
-                            height: 24,
-                            // Exact positioning to center on the line
-                            transform: Matrix4.translationValues(linePosition - 12, 0, 0),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ),
-                      ],
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
                     ),
                   ),
-
                   const SizedBox(width: 16),
-
+                  // Content
                   Expanded(
-                    child: _buildTimelineContent(
-                      label: 'Label',
-                      title: 'Title',
-                      descriptions: ['Description', 'Description'],
-                      hasAttachments: true,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Label',
+                          style: const TextStyle(
+                            fontFamily: 'Lato',
+                            color: Color(0xFFB8BDBF),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Title',
+                          style: const TextStyle(
+                            fontFamily: 'EBGaramond',
+                            color: Color(0xFFE7E9EA),
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Description',
+                          style: const TextStyle(
+                            fontFamily: 'Lato',
+                            color: Color(0xFFB8BDBF),
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Description',
+                          style: const TextStyle(
+                            fontFamily: 'Lato',
+                            color: Color(0xFFB8BDBF),
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildAttachmentsSection(),
+                      ],
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 16),
-
-              // Small diamond marker 1 - closer to top
-              Padding(
-                padding: EdgeInsets.zero,
-                child: Transform.translate(
-                  offset: Offset(linePosition - 4, 0), // Position to center on the line
-                  child: Transform.rotate(
-                    angle: 0.785398, // 45 degrees in radians
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      color: const Color(0xFFD49A00),
+              // Diamond markers
+              const SizedBox(height: 30),
+              Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 9.0),
+                    child: Transform.rotate(
+                      angle: 0.785398, // 45 degrees in radians
+                      child: Container(
+                        width: 6,
+                        height: 6,
+                        color: const Color(0xFFD49A00),
+                      ),
                     ),
                   ),
-                ),
+                ],
+              ),
+
+              const SizedBox(height: 30),
+              Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 7.0),
+                    child: Transform.rotate(
+                      angle: 0.785398, // 45 degrees in radians
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        color: const Color(0xFFD49A00),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 30),
+              Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 9.0),
+                    child: Transform.rotate(
+                      angle: 0.785398, // 45 degrees in radians
+                      child: Container(
+                        width: 6,
+                        height: 6,
+                        color: const Color(0xFFD49A00),
+                      ),
+                    ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 30),
 
-              // Large diamond marker - further down
-              Padding(
-                padding: EdgeInsets.zero,
-                child: Transform.translate(
-                  offset: Offset(linePosition - 10, 0), // Position to center on the line
-                  child: Transform.rotate(
-                    angle: 0.785398, // 45 degrees in radians
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      color: const Color(0xFFD49A00),
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 40),
-
-              // Small diamond marker 2 - even further down
-              Padding(
-                padding: EdgeInsets.zero,
-                child: Transform.translate(
-                  offset: Offset(linePosition - 4, 0), // Position to center on the line
-                  child: Transform.rotate(
-                    angle: 0.785398, // 45 degrees in radians
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      color: const Color(0xFFD49A00),
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 50),
-
-              // Second timeline item with white circle
+              // Second timeline entry
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // White circle indicator - position to center over the timeline
-                  SizedBox(
+                  // White circle
+                  Container(
                     width: 24,
                     height: 24,
-                    child: Stack(
-                      children: [
-                        // Center the circle on the line
-                        Positioned(
-                          left: 0,
-                          top: 0,
-                          child: Container(
-                            width: 24,
-                            height: 24,
-                            // Exact positioning to center on the line
-                            transform: Matrix4.translationValues(linePosition - 12, 0, 0),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ),
-                      ],
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
                     ),
                   ),
-
                   const SizedBox(width: 16),
-
+                  // Content
                   Expanded(
-                    child: _buildTimelineContent(
-                      label: 'Label',
-                      title: 'Title',
-                      descriptions: ['Description', 'Description'],
-                      hasAttachments: true,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Label',
+                          style: const TextStyle(
+                            fontFamily: 'Lato',
+                            color: Color(0xFFB8BDBF),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Title',
+                          style: const TextStyle(
+                            fontFamily: 'EBGaramond',
+                            color: Color(0xFFE7E9EA),
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Description',
+                          style: const TextStyle(
+                            fontFamily: 'Lato',
+                            color: Color(0xFFB8BDBF),
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Description',
+                          style: const TextStyle(
+                            fontFamily: 'Lato',
+                            color: Color(0xFFB8BDBF),
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildAttachmentsSection(),
+                      ],
                     ),
                   ),
                 ],
@@ -895,126 +933,53 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerPr
     );
   }
 
-  Widget _buildTimelineContent({
-    required String label,
-    required String title,
-    required List<String> descriptions,
-    required bool hasAttachments,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16, bottom: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Label text
-          Text(
-            label,
-            style: const TextStyle(
-              fontFamily: 'Lato',
-              color: Color(0xFFB8BDBF),
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-
-          const SizedBox(height: 4),
-
-          // Title text
-          Text(
-            title,
-            style: const TextStyle(
-              fontFamily: 'EBGaramond',
+  Widget _buildAttachmentsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Attachment header with link icon
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: const [
+            Icon(
+              Icons.link,
               color: Color(0xFFE7E9EA),
-              fontSize: 28,
-              fontWeight: FontWeight.w500,
-              letterSpacing: 0.2,
+              size: 20,
             ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // Description texts
-          ...descriptions
-              .map((text) => Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Text(
-                      text,
-                      style: const TextStyle(
-                        fontFamily: 'Lato',
-                        color: Color(0xFFB8BDBF),
-                        fontSize: 14,
-                        height: 1.4,
-                      ),
-                    ),
-                  ))
-              .toList(),
-
-          if (hasAttachments) ...[
-            const SizedBox(height: 16),
-
-            // Attachments section
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0E1C21),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Attachments header with paperclip icon
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.link,
-                        color: Color(0xFFE7E9EA),
-                        size: 18,
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Attachments',
-                        style: TextStyle(
-                          fontFamily: 'Lato',
-                          color: Color(0xFFE7E9EA),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Image thumbnails in a row
-                  Row(
-                    children: [
-                      _buildAttachmentThumbnail(),
-                      const SizedBox(width: 8),
-                      _buildAttachmentThumbnail(),
-                      const SizedBox(width: 8),
-                      _buildAttachmentThumbnail(),
-                    ],
-                  ),
-                ],
+            SizedBox(width: 8),
+            Text(
+              'Attachments',
+              style: TextStyle(
+                fontFamily: 'Lato',
+                color: Color(0xFFE7E9EA),
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
-        ],
-      ),
+        ),
+        const SizedBox(height: 16),
+        // Attachment thumbnails
+        Row(
+          children: [
+            _buildSquareAttachment(),
+            const SizedBox(width: 8),
+            _buildSquareAttachment(),
+            const SizedBox(width: 8),
+            _buildSquareAttachment(),
+          ],
+        ),
+      ],
     );
   }
 
-  Widget _buildAttachmentThumbnail() {
-    return Expanded(
-      child: AspectRatio(
-        aspectRatio: 1,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.grey[350],
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
+  Widget _buildSquareAttachment() {
+    return Container(
+      width: 95,
+      height: 95,
+      decoration: BoxDecoration(
+        color: const Color(0xFFCCCCCC),
+        borderRadius: BorderRadius.circular(4),
       ),
     );
   }
