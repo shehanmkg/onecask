@@ -1,0 +1,44 @@
+[
+  {
+    "id": "item_001",
+    "name": "Vintage Camera",
+    "description": "A classic 35mm film camera from the 1970s. Still functional.",
+    "imageUrl": "https://via.placeholder.com/150/f9a825/000000?Text=Camera"
+  },
+  {
+    "id": "item_002",
+    "name": "Retro Game Console",
+    "description": "An iconic 8-bit gaming console with two controllers and popular game cartridge.",
+    "imageUrl": "https://via.placeholder.com/150/6a1b9a/ffffff?Text=Console"
+  },
+  {
+    "id": "item_003",
+    "name": "Signed Baseball",
+    "description": "Official league baseball signed by a famous player.",
+    "imageUrl": "https://via.placeholder.com/150/388e3c/ffffff?Text=Baseball"
+  },
+  {
+    "id": "item_004",
+    "name": "Antique Pocket Watch",
+    "description": "Gold-plated pocket watch with intricate engravings. Needs servicing.",
+    "imageUrl": "https://via.placeholder.com/150/fdd835/000000?Text=Watch"
+  },
+  {
+    "id": "item_005",
+    "name": "Rare Stamp Collection",
+    "description": "A small album containing various rare postage stamps from around the world.",
+    "imageUrl": "https://via.placeholder.com/150/00acc1/ffffff?Text=Stamps"
+  },
+   {
+    "id": "item_006",
+    "name": "First Edition Book",
+    "description": "A signed first edition copy of a well-known novel.",
+    "imageUrl": "https://via.placeholder.com/150/d81b60/ffffff?Text=Book"
+  },
+   {
+    "id": "item_007",
+    "name": "Vinyl Record",
+    "description": "Classic rock album vinyl record in good condition.",
+    "imageUrl": "https://via.placeholder.com/150/546e7a/ffffff?Text=Vinyl"
+  }
+]

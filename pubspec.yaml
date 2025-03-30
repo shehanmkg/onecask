@@ -1,0 +1,112 @@
+name: one_cask
+description: "Premium whiskey collection management app"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  flutter_bloc: ^8.1.4
+  equatable: ^2.0.5
+
+  connectivity_plus: ^6.0.3
+  sqflite: ^2.3.3+1
+  path_provider: ^2.1.3
+  shared_preferences: ^2.2.3
+  
+  timeline_tile: ^2.0.0
+
+  # google_fonts: ^6.1.0 # Using local fonts instead
+  flutter_svg: ^2.0.9
+  package_info_plus: ^5.0.1
+
+  go_router: ^13.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/mock_data/
+    - assets/images/
+    - assets/icons/
+    - assets/bottle_images/
+    - assets/distillery_images/
+
+  fonts:
+  - family: EBGaramond
+    fonts:
+      - asset: assets/fonts/EBGaramond/EBGaramond-Regular.ttf
+        weight: 400
+        style: normal
+      - asset: assets/fonts/EBGaramond/EBGaramond-Italic.ttf
+        weight: 400
+        style: italic
+      - asset: assets/fonts/EBGaramond/EBGaramond-Medium.ttf
+        weight: 500
+        style: normal
+      - asset: assets/fonts/EBGaramond/EBGaramond-MediumItalic.ttf
+        weight: 500
+        style: italic
+      - asset: assets/fonts/EBGaramond/EBGaramond-SemiBold.ttf
+        weight: 600
+        style: normal
+      - asset: assets/fonts/EBGaramond/EBGaramond-SemiBoldItalic.ttf
+        weight: 600
+        style: italic
+      - asset: assets/fonts/EBGaramond/EBGaramond-Bold.ttf
+        weight: 700
+        style: normal
+      - asset: assets/fonts/EBGaramond/EBGaramond-BoldItalic.ttf
+        weight: 700
+        style: italic
+      - asset: assets/fonts/EBGaramond/EBGaramond-ExtraBold.ttf
+        weight: 800
+        style: normal
+      - asset: assets/fonts/EBGaramond/EBGaramond-ExtraBoldItalic.ttf
+        weight: 800
+        style: italic
+  - family: Lato
+    fonts:
+      - asset: assets/fonts/Lato/Lato-Thin.ttf
+        weight: 100
+        style: normal
+      - asset: assets/fonts/Lato/Lato-ThinItalic.ttf
+        weight: 100
+        style: italic
+      - asset: assets/fonts/Lato/Lato-Light.ttf
+        weight: 300
+        style: normal
+      - asset: assets/fonts/Lato/Lato-LightItalic.ttf
+        weight: 300
+        style: italic
+      - asset: assets/fonts/Lato/Lato-Regular.ttf
+        weight: 400
+        style: normal
+      - asset: assets/fonts/Lato/Lato-Italic.ttf
+        weight: 400
+        style: italic
+      - asset: assets/fonts/Lato/Lato-Bold.ttf
+        weight: 700
+        style: normal
+      - asset: assets/fonts/Lato/Lato-BoldItalic.ttf
+        weight: 700
+        style: italic
+      - asset: assets/fonts/Lato/Lato-Black.ttf
+        weight: 900
+        style: normal
+      - asset: assets/fonts/Lato/Lato-BlackItalic.ttf
+        weight: 900
+        style: italic 
