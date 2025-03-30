@@ -16,21 +16,101 @@ class BottleDetailsScreen extends StatefulWidget {
   State<BottleDetailsScreen> createState() => _BottleDetailsScreenState();
 }
 
-class _BottleDetailsScreenState extends State<BottleDetailsScreen> with SingleTickerProviderStateMixin {
+class _BottleDetailsScreenState extends State<BottleDetailsScreen> with TickerProviderStateMixin {
   late TabController _tabController;
   bool _isExpanded = false;
+
+  // Animation controllers
+  late AnimationController _expandController;
+  late Animation<double> _expandAnimation;
+  late Animation<double> _rotationAnimation;
+  late Animation<double> _fadeAnimation;
+
+  // Separate animation controller for shimmer to avoid lifecycle issues
+  late AnimationController _shimmerController;
+  late Animation<double> _shimmerAnimation;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.index = 0;
+
+    // Initialize expand animation controller
+    _expandController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+
+    // Create animations
+    _expandAnimation = CurvedAnimation(
+      parent: _expandController,
+      curve: Curves.easeInOut,
+    );
+
+    _rotationAnimation = Tween<double>(
+      begin: 0.0,
+      end: 0.5,
+    ).animate(CurvedAnimation(
+      parent: _expandController,
+      curve: Curves.easeOut,
+    ));
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _expandController,
+      curve: const Interval(0.4, 1.0, curve: Curves.easeInOut),
+    ));
+
+    // Create separate shimmer controller with repeating animation
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+
+    _shimmerAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(_shimmerController);
+
+    // Start or set initial animations
+    if (_isExpanded) {
+      _expandController.value = 1.0;
+    }
+
+    // Listener to control shimmer animation based on expanded state
+    _expandController.addStatusListener((status) {
+      if (status == AnimationStatus.forward || status == AnimationStatus.completed) {
+        if (!_shimmerController.isAnimating) {
+          _shimmerController.repeat(reverse: true);
+        }
+      } else {
+        _shimmerController.stop();
+        _shimmerController.reset();
+      }
+    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _expandController.dispose();
+    _shimmerController.dispose();
     super.dispose();
+  }
+
+  // Toggle the expansion state with animation
+  void _toggleExpansion() {
+    setState(() {
+      _isExpanded = !_isExpanded;
+      if (_isExpanded) {
+        _expandController.forward();
+      } else {
+        _expandController.reverse();
+      }
+    });
   }
 
   @override
@@ -55,6 +135,8 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with SingleTi
               // Bottle type / authenticity section
               _buildAuthenticitySection(),
 
+              const SizedBox(height: 25),
+
               // Rest of content in scrollable area
               Expanded(
                 child: SingleChildScrollView(
@@ -77,12 +159,13 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with SingleTi
                           ),
                         ),
                       ),
-
+                      const SizedBox(height: 25),
                       // Bottle information container
                       Container(
                         width: double.infinity,
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
                         padding: const EdgeInsets.all(24),
-                        color: const Color(0xFF0A1F2E), // Slightly lighter blue with opacity
+                        color: const Color(0xFF122329), // Slightly lighter blue with opacity
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -91,8 +174,8 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with SingleTi
                               'Bottle 135/184',
                               style: const TextStyle(
                                 fontFamily: 'Lato',
-                                color: Color(0xFFE7E9EA),
-                                fontSize: 14,
+                                color: Color(0xFFB8BDBF),
+                                fontSize: 12,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -105,19 +188,17 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with SingleTi
                                   style: const TextStyle(
                                     fontFamily: 'EBGaramond',
                                     color: Color(0xFFE7E9EA),
-                                    fontSize: 40,
-                                    fontWeight: FontWeight.w300,
-                                    height: 1.1,
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                                 Text(
                                   '18 Year old',
                                   style: const TextStyle(
                                     fontFamily: 'EBGaramond',
-                                    color: Color(0xFFDE9A1F),
-                                    fontSize: 40,
-                                    fontWeight: FontWeight.w300,
-                                    height: 1.1,
+                                    color: Color(0xFFD49A00),
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],
@@ -129,9 +210,8 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with SingleTi
                               style: const TextStyle(
                                 fontFamily: 'EBGaramond',
                                 color: Color(0xFFE7E9EA),
-                                fontSize: 40,
-                                fontWeight: FontWeight.w300,
-                                height: 1.1,
+                                fontSize: 32,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                             const SizedBox(height: 24),
@@ -143,39 +223,51 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with SingleTi
 
                             // Tab content
                             _buildTabContent(),
-
-                            const SizedBox(height: 40),
-
-                            // Add to collection button
-                            SizedBox(
-                              width: double.infinity,
-                              height: 56,
-                              child: ElevatedButton.icon(
-                                icon: const Icon(Icons.add, size: 24),
-                                label: const Text(
-                                  'Add to my collection',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFDE9A1F),
-                                  foregroundColor: Colors.black87,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                ),
-                                onPressed: () {
-                                  // Add to collection logic
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: 16),
                           ],
                         ),
                       ),
+                      const SizedBox(height: 24),
+
+                      // Add to collection button - moved outside the tab content container
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                        ),
+                        child: ElevatedButton.icon(
+                          icon: const Icon(
+                            Icons.add,
+                            size: 20,
+                            color: Color(0xFF0B1519),
+                          ),
+                          label: const Text(
+                            'Add to my collection',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF0B1519),
+                              fontFamily: 'EBGaramond',
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFD49A00),
+                            foregroundColor: const Color(0xFF0E1C21),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            elevation: 3,
+                            shadowColor: const Color(0xFF0B1519).withValues(alpha: 0.3),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                          onPressed: () {
+                            
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
@@ -231,165 +323,181 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with SingleTi
   }
 
   Widget _buildAuthenticitySection() {
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _isExpanded = !_isExpanded;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF0E1C21).withOpacity(0.8),
-          border: Border(
-            top: BorderSide(
-              color: Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
-            bottom: BorderSide(
-              color: Colors.white.withOpacity(0.1),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _toggleExpansion,
+        splashColor: const Color(0xFFDE9A1F).withValues(alpha: 0.1),
+        highlightColor: const Color(0xFFDE9A1F).withValues(alpha: 0.05),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0B1519),
+            border: Border.all(
+              color: const Color(0xFF0E1C21),
               width: 1,
             ),
           ),
-        ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                // Genuine bottle icon
-                Container(
-                  width: 48,
-                  height: 48,
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0A1F2E),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: const Color(0xFF1A2F3E),
-                      width: 1,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  // Genuine bottle icon with subtle pulse animation on tap
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 350),
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      boxShadow: _isExpanded
+                          ? [
+                              BoxShadow(
+                                color: const Color(0xFFDE9A1F).withAlpha(20),
+                                blurRadius: 4,
+                                spreadRadius: 1,
+                              )
+                            ]
+                          : null,
+                    ),
+                    child: Image.asset(
+                      'assets/images/logo_genuine.png',
+                      fit: BoxFit.contain,
                     ),
                   ),
-                  child: Image.asset(
-                    'assets/images/logo_genuine.png',
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                const SizedBox(width: 16),
+                  const SizedBox(width: 16),
 
-                // Text
-                Expanded(
-                  child: const Text(
-                    'Genuine Bottle (Unopened)',
-                    style: TextStyle(
-                      fontFamily: 'Lato',
-                      color: Color(0xFFE7E9EA),
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-
-                // Dropdown arrow
-                Icon(
-                  _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                  color: const Color(0xFFDE9A1F),
-                  size: 28,
-                ),
-              ],
-            ),
-
-            // Expanded content
-            if (_isExpanded) ...[
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0A1F2E).withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Authenticity Verified',
-                      style: const TextStyle(
-                        fontFamily: 'EBGaramond',
+                  // Text
+                  Expanded(
+                    child: const Text(
+                      'Genuine Bottle (Unopened)',
+                      style: TextStyle(
+                        fontFamily: 'Lato',
                         color: Color(0xFFE7E9EA),
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'This bottle has been verified as genuine by One Cask experts. The bottle is unopened and in mint condition.',
-                      style: TextStyle(
-                        fontFamily: 'Lato',
-                        color: Color(0xFFD7D5D1),
-                        fontSize: 16,
-                        height: 1.5,
+                  ),
+
+                  // Animated rotating dropdown arrow
+                  RotationTransition(
+                    turns: _rotationAnimation,
+                    child: Icon(
+                      Icons.keyboard_arrow_down,
+                      color: const Color(0xFFDE9A1F),
+                      size: 28,
+                    ),
+                  ),
+                ],
+              ),
+
+              // Animated expanding content
+              ClipRect(
+                child: AnimatedBuilder(
+                  animation: _expandAnimation,
+                  builder: (context, child) {
+                    return SizeTransition(
+                      sizeFactor: _expandAnimation,
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: child,
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Verified Date',
-                                style: const TextStyle(
-                                  fontFamily: 'Lato',
-                                  color: Color(0xFFDE9A1F),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                '12 March 2024',
-                                style: TextStyle(
-                                  fontFamily: 'Lato',
-                                  color: Color(0xFFE7E9EA),
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0A1F2E),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Verified By',
-                                style: const TextStyle(
-                                  fontFamily: 'Lato',
-                                  color: Color(0xFFDE9A1F),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildShimmerTitle(),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'This bottle has been verified as genuine by One Cask experts. The bottle is unopened and in mint condition.',
+                              style: TextStyle(
+                                fontFamily: 'Lato',
+                                color: Color(0xFFD7D5D1),
+                                fontSize: 16,
+                                height: 1.5,
                               ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                'One Cask Expert',
-                                style: TextStyle(
-                                  fontFamily: 'Lato',
-                                  color: Color(0xFFE7E9EA),
-                                  fontSize: 16,
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Verified Date',
+                                        style: const TextStyle(
+                                          fontFamily: 'Lato',
+                                          color: Color(0xFFDE9A1F),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      const Text(
+                                        '12 March 2024',
+                                        style: TextStyle(
+                                          fontFamily: 'Lato',
+                                          color: Color(0xFFE7E9EA),
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Verified By',
+                                        style: const TextStyle(
+                                          fontFamily: 'Lato',
+                                          color: Color(0xFFDE9A1F),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      const Text(
+                                        'One Cask Expert',
+                                        style: TextStyle(
+                                          fontFamily: 'Lato',
+                                          color: Color(0xFFE7E9EA),
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -397,6 +505,7 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with SingleTi
 
   Widget _buildTabBar() {
     return Container(
+      padding: EdgeInsets.zero,
       decoration: BoxDecoration(
         color: const Color(0xFF0E1C21),
         borderRadius: BorderRadius.circular(8),
@@ -404,35 +513,35 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with SingleTi
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: const Color(0xFFDE9A1F),
-          borderRadius: BorderRadius.circular(8),
+          color: const Color(0xFFD49A00),
+          borderRadius: BorderRadius.circular(6),
         ),
         dividerColor: Colors.transparent,
         indicatorSize: TabBarIndicatorSize.tab,
-        padding: EdgeInsets.zero,
-        labelColor: Colors.black87,
-        unselectedLabelColor: const Color(0xFFABB2B9),
+        padding: const EdgeInsets.all(3),
+        labelColor: const Color(0xFF0B1519),
+        unselectedLabelColor: const Color(0xFF899194),
         labelStyle: const TextStyle(
-          fontSize: 17,
-          fontWeight: FontWeight.w500,
-          height: 1.0,
+          fontSize: 12,
+          fontFamily: 'Lato',
+          fontWeight: FontWeight.w600,
         ),
         unselectedLabelStyle: const TextStyle(
-          fontSize: 17,
+          fontSize: 12,
           fontWeight: FontWeight.w400,
-          height: 1.0,
+          fontFamily: 'Lato',
         ),
         tabs: const [
           SizedBox(
-            height: 52,
+            height: 36,
             child: Center(child: Text('Details')),
           ),
           SizedBox(
-            height: 52,
+            height: 36,
             child: Center(child: Text('Tasting notes')),
           ),
           SizedBox(
-            height: 52,
+            height: 36,
             child: Center(child: Text('History')),
           ),
         ],
@@ -712,7 +821,7 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with SingleTi
             label,
             style: const TextStyle(
               fontFamily: 'Lato',
-              color: Color(0xFFE7E9EA),
+              color: Colors.white,
               fontSize: 16,
             ),
           ),
@@ -720,12 +829,36 @@ class _BottleDetailsScreenState extends State<BottleDetailsScreen> with SingleTi
             value,
             style: const TextStyle(
               fontFamily: 'Lato',
-              color: Color(0xFFD7D5D1),
+              color: Color(0xFFB8BDBF),
               fontSize: 16,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  // Add custom shimmer widget for the title
+  Widget _buildShimmerTitle() {
+    return AnimatedBuilder(
+      animation: _shimmerAnimation,
+      builder: (context, child) {
+        // Use a simple TweenSequence to oscillate between colors
+        final color = ColorTween(
+          begin: const Color(0xFFE7E9EA),
+          end: const Color(0xFFDE9A1F),
+        ).transform(_shimmerAnimation.value);
+
+        return Text(
+          'Authenticity Verified',
+          style: TextStyle(
+            fontFamily: 'EBGaramond',
+            color: color,
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+          ),
+        );
+      },
     );
   }
 }
